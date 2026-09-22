@@ -1294,7 +1294,7 @@ function scmChapterPool(value){
 (function(){
 "use strict";
 const firebaseConfig={
-  apiKey:"AIzaSyCDQRVXCxHZfy3cLUgJ2g3kUTuBABHMbc",
+  apiKey:"AIzaSyCDQRVXCxHZfy3cLUJg2jG3kUTuBABHMbc",
   authDomain:"cma-mcq-portal-cf33f.firebaseapp.com",
   projectId:"cma-mcq-portal-cf33f",
   storageBucket:"cma-mcq-portal-cf33f.firebasestorage.app",
@@ -1331,34 +1331,14 @@ let authReady=false, pendingAction=null, bypassClick=false, actionBusy=false;
 
 function norm(v){return(v||"").toString().trim().toLowerCase();}
 function showNotice(t){notice.textContent=t||"";notice.style.display=t?"block":"none";if(t)setTimeout(()=>{notice.style.display="none";},5000);}
-function openLogin(action){pendingAction=action||null;overlay.style.display="flex";msg.textContent="";googleBtn.disabled=false;}
+function openLogin(action){pendingAction=action||null;location.href="index.html";}
 function closeLogin(){overlay.style.display="none";msg.textContent="";pendingAction=null;}
 closeBtn.onclick=closeLogin;
 overlay.addEventListener("click",e=>{if(e.target===overlay)closeLogin();});
-loginBtn.onclick=()=>openLogin(null);
+loginBtn.onclick=()=>{location.href="index.html";};
 logoutBtn.onclick=async()=>{try{await auth.signOut();}catch(e){showNotice("Logout failed. Please try again.");}};
 
-googleBtn.onclick=async()=>{
-  if(!authReady){msg.textContent="Please wait a moment and try again.";return;}
-  googleBtn.disabled=true;msg.textContent="Opening Google sign-in…";
-  if(location.protocol==="file:"){msg.textContent="Open the GitHub Pages HTTPS URL to sign in.";googleBtn.disabled=false;return;}
-  try{
-    await persistenceReady;
-    const result=await auth.signInWithPopup(provider);
-    const user=result&&result.user;
-    closeLogin();
-    if(user && pendingAction){
-      const action=pendingAction;
-      pendingAction=null;
-      await user.getIdToken();
-      await action();
-    }
-  }catch(e){
-    console.error(e);
-    msg.textContent="Sign-in failed: "+(e&&e.code?e.code:"unknown-error");
-    googleBtn.disabled=false;
-  }
-};
+googleBtn.onclick=()=>{location.href="index.html";};
 auth.getRedirectResult().catch(e=>{if(e)console.error("Redirect result:",e);}).finally(()=>{authReady=true;});
 
 function dateExpired(v){return !!v && String(v)<new Date().toISOString().slice(0,10);}
@@ -1447,8 +1427,7 @@ async function continueAction(btn){
     await authStateReady;
     const user=auth.currentUser;
     if(!user){
-      showNotice("Please sign in from the main CMA MCQ Portal first.");
-      setTimeout(()=>{location.href="index.html";},700);
+      location.href="index.html";
       return;
     }
     const state=await getAccessState(user);
