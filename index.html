@@ -104,20 +104,20 @@ footer.contact-footer{text-align:center;padding:34px 20px 20px;margin-top:30px;b
 "use strict";
 
 const firebaseConfig={
- apiKey:"AIzaSyA7tGvsDYyYLSWFPeS6lsxlP8gLOw53Wrk",
- authDomain:"cma-mcq-portal.firebaseapp.com",
- projectId:"cma-mcq-portal",
- storageBucket:"cma-mcq-portal.firebasestorage.app",
- messagingSenderId:"734935438365",
- appId:"1:734935438365:web:40ea0a7677ef572234a2f4",
- measurementId:"G-H6GDK7Y3RJ"
+  apiKey:"AIzaSyCDQRVXCxHZfy3cLUJg2jG3kUTuBABHmbc",
+  authDomain:"cma-mcq-portal-cf33f.firebaseapp.com",
+  projectId:"cma-mcq-portal-cf33f",
+  storageBucket:"cma-mcq-portal-cf33f.firebasestorage.app",
+  messagingSenderId:"208738737302",
+  appId:"1:208738737302:web:3754a55033f67a8ffef6b7",
+  measurementId:"G-TXD74QQE8F"
 };
 
 if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
 const auth=firebase.auth();
 const db=firebase.firestore();
-const ADMIN_EMAIL="taxxpath@gmail.com";
+const ADMIN_EMAIL="rohit.fcg123@gmail.com";
 
 const loadingScreen=document.getElementById("loadingScreen");
 const loadingText=document.getElementById("loadingText");
@@ -330,28 +330,7 @@ async function verifyAccess(user){
    return{approved:true,admin:true,data:{role:"admin"}};
  }
 
- // Global Student Portal Access
- const globalRef=await db.doc("settings/globalAccess").get();
- const globalOpen=globalRef.exists && globalRef.data().studentAccessOpen===true;
-
- if(globalOpen){
-   return{
-     approved:true,
-     admin:false,
-     globalOpen:true,
-     data:{
-       role:"student",
-       accessFoundation:true,
-       accessInterGroup1:true,
-       accessInterGroup2:true,
-       accessFinalGroup3:true,
-       accessFinalGroup4:true,
-       expiryDate:null
-     }
-   };
- }
-
- const ref=await db.collection("approvedUsers").doc(email).get();
+const ref=await db.collection("approvedUsers").doc(email).get();
  if(!ref.exists)return{approved:false,reason:"Your Google account has not been approved yet."};
 
  const data=ref.data()||{};
@@ -426,7 +405,7 @@ auth.onAuthStateChanged(async function(user){
    }
 
    userEmail.textContent=user.email||"";
-   applyAccess(Object.assign({},result.data||{},{globalOpen:!!result.globalOpen}),!!result.admin);
+   applyAccess(result.data||{},!!result.admin);
 
    // Tracking is non-blocking: a tracking failure must never prevent portal access.
    trackUserLogin(user).catch(function(error){
