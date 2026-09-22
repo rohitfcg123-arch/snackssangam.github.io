@@ -1,2 +1,1 @@
-# snackssangam.github.io
-na
+CMA MCQ Portal
