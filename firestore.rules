@@ -47,6 +47,7 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    match /settings/access { allow read: if true; allow write: if isAdmin(); }
     match /settings/{document} { allow read, write: if isAdmin(); }
     match /admins/{uid} { allow read: if isOwner(uid) || isAdmin(); allow write: if isAdmin(); }
     match /subscriptions/{uid} { allow read: if isOwner(uid) || isAdmin(); allow write: if isAdmin(); }

@@ -196,25 +196,57 @@ auth.getRedirectResult().catch(e=>{if(e)console.error("Redirect result:",e);}).f
 
 function dateExpired(v){return !!v && String(v)<new Date().toISOString().slice(0,10);}
 
+let __siteSettingsCache=null;
+async function getSiteSettings(){
+  if(__siteSettingsCache) return __siteSettingsCache;
+  const defaults={freeAccessMode:"attemptLimit",freeAttemptLimit:5,freePoolSize:30,siteWideFree:false};
+  try{
+    const snap=await db.collection("settings").doc("access").get();
+    __siteSettingsCache=snap.exists?Object.assign({},defaults,snap.data()):defaults;
+  }catch(e){console.warn("Could not load access settings, using defaults.",e);__siteSettingsCache=defaults;}
+  return __siteSettingsCache;
+}
+
+let __origSourceQuestions=null;
+function applyFreePoolCap(poolSize){
+  if(!__origSourceQuestions) __origSourceQuestions=window.sourceQuestions;
+  window.sourceQuestions=function(){
+    let qs=__origSourceQuestions();
+    if(source()==="bank") qs=qs.slice().sort((a,b)=>a.id-b.id).slice(0,poolSize);
+    return qs;
+  };
+}
+function clearFreePoolCap(){
+  if(__origSourceQuestions) window.sourceQuestions=__origSourceQuestions;
+}
+
 async function getAccessState(user){
   const email=norm(user.email);
   if(!email) return {allowed:false,reason:"No Google email was returned."};
   if(email===ADMIN_EMAIL) return {allowed:true,paid:true,admin:true,freeUsed:0,freeRemaining:999999,data:{role:"admin"}};
+  const settings=await getSiteSettings();
+  if(settings.siteWideFree) return {allowed:true,paid:true,siteWide:true,freeUsed:0,freeRemaining:999999,data:{},settings};
   let data={};
   const snap=await db.collection("access").doc(email).get();
   if(snap.exists) data=snap.data()||{};
-  if(String(data.status||"active").toLowerCase()==="inactive") return {allowed:false,reason:"Your account is currently inactive."};
+  if(String(data.status||"active").toLowerCase()==="inactive") return {allowed:false,reason:"Your account is currently inactive.",settings};
   const today=new Date().toISOString().slice(0,10);
   const expiry=String(data.expiryDate||"");
   const expired=!!expiry && expiry<today;
   const groups=Array.isArray(data.groups)?data.groups:[];
   const paid=groups.includes(ACCESS_GROUP) && !expired;
+  if(paid) return {allowed:true,paid:true,freeUsed:0,freeRemaining:999999,data,settings};
+  if(source()==="pyq") return {allowed:false,paid:false,data,settings,reason:"Previous Year Papers are available only with Premium Access. Please purchase access for "+GROUP_LABEL+"."};
+  if(settings.freeAccessMode==="fixedPool"){
+    const poolSize=Math.max(1,Number(settings.freePoolSize)||30);
+    return {allowed:true,paid:false,fixedPool:true,poolSize,freeUsed:0,freeRemaining:999999,data,settings};
+  }
+  const limit=Math.max(0,Number(settings.freeAttemptLimit)||5);
   const attemptsSnap=await db.collection("attempts").where("uid","==",user.uid).get();
   const freeUsed=attemptsSnap.size;
-  const freeRemaining=Math.max(0,5-freeUsed);
-  if(paid) return {allowed:true,paid:true,freeUsed,freeRemaining,data};
-  if(freeRemaining>0) return {allowed:true,paid:false,freeUsed,freeRemaining,data};
-  return {allowed:false,paid:false,freeUsed,freeRemaining,data,reason:"Your 5 free attempts are finished. Please purchase access for "+GROUP_LABEL+"."};
+  const freeRemaining=Math.max(0,limit-freeUsed);
+  if(freeRemaining>0) return {allowed:true,paid:false,freeUsed,freeRemaining,data,settings};
+  return {allowed:false,paid:false,freeUsed,freeRemaining,data,settings,reason:"Your "+limit+" free attempts are finished. Please purchase access for "+GROUP_LABEL+"."};
 }
 async function recordAttempt(user,mode){
   await db.collection("attempts").add({
@@ -249,6 +281,7 @@ async function continueAction(btn){
     if(!user){openLogin(()=>continueAction(btn));return;}
     const state=await getAccessState(user);
     if(!state.allowed){showNotice(state.reason||"Access is not available.");return;}
+    if(state.fixedPool) applyFreePoolCap(state.poolSize); else clearFreePoolCap();
     await recordAttempt(user, (btn.textContent||"").trim().slice(0,80));
     bypassClick=true;
     btn.click();
