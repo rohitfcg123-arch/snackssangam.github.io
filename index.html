@@ -362,7 +362,7 @@ googleLogin.addEventListener("click",function(){
  googleLogin.disabled=true;
  googleLoginLabel.textContent="Signing in…";
  setMessage("");
- auth.signInWithPopup(provider).catch(function(error){
+ auth.signInWithRedirect(provider).catch(function(error){
    console.error(error);
    setMessage(friendlyError(error),"error");
    googleLogin.disabled=false;
