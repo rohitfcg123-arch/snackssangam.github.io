@@ -117,6 +117,7 @@ if(!firebase.apps.length) firebase.initializeApp(firebaseConfig);
 
 const auth=firebase.auth();
 const db=firebase.firestore();
+let authReady=false;
 const ADMIN_EMAIL="rohit.fcg123@gmail.com";
 
 const loadingScreen=document.getElementById("loadingScreen");
@@ -359,23 +360,35 @@ const provider=new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({prompt:"select_account"});
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
 
-googleLogin.addEventListener("click",function(){
- googleLogin.disabled=true;
- googleLoginLabel.textContent="Signing in…";
- if(location.protocol==="file:"){
-   setMessage("Please open the GitHub Pages HTTPS URL to sign in.","error");
-   googleLogin.disabled=false;
-   googleLoginLabel.textContent="Continue with Google";
-   return;
- }
- setMessage("");
- auth.signInWithRedirect(provider).catch(function(error){
-   console.error(error);
-   setMessage(friendlyError(error),"error");
-   googleLogin.disabled=false;
-   googleLoginLabel.textContent="Continue with Google";
- });
-});
+async function startGoogleLogin(){
+  if(!authReady){
+    setMessage("Please wait a moment and try again.","error");
+    return;
+  }
+  if(auth.currentUser){
+    hideAuthModal();
+    return;
+  }
+  googleLogin.disabled=true;
+  googleLoginLabel.textContent="Signing in…";
+  setMessage("");
+  if(location.protocol==="file:"){
+    setMessage("Please open the GitHub Pages HTTPS URL to sign in.","error");
+    googleLogin.disabled=false;
+    googleLoginLabel.textContent="Continue with Google";
+    return;
+  }
+  try{
+    await auth.signInWithRedirect(provider);
+  }catch(error){
+    console.error(error);
+    setMessage(friendlyError(error),"error");
+    googleLogin.disabled=false;
+    googleLoginLabel.textContent="Continue with Google";
+  }
+}
+
+googleLogin.addEventListener("click",startGoogleLogin);
 
 topLoginBtn.addEventListener("click",function(){
   showAuthModal();
@@ -400,6 +413,10 @@ logoutBtn.addEventListener("click",async function(){
     alert("Logout failed. Please try again.");
   }
 });
+
+auth.getRedirectResult().catch(function(error){
+  if(error)console.error("Redirect sign-in result:",error);
+}).finally(function(){authReady=true;});
 
 auth.onAuthStateChanged(async function(user){
   googleLogin.disabled=false;
