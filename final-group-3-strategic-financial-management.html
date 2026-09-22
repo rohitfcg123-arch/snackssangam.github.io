@@ -817,6 +817,10 @@ const auth=firebase.auth(),db=firebase.firestore();
 const provider=new firebase.auth.GoogleAuthProvider();
 provider.setCustomParameters({prompt:"select_account"});
 auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
+const authStateReady=new Promise(resolve=>{
+  let done=false;
+  const unsub=auth.onAuthStateChanged(()=>{if(!done){done=true;unsub();resolve();}});
+});
 
 const emailEl=document.getElementById("cmaSessionEmail");
 const loginBtn=document.getElementById("cmaLoginBtn");
@@ -929,6 +933,7 @@ async function continueAction(btn){
   if(actionBusy)return;
   actionBusy=true;
   try{
+    await authStateReady;
     const user=auth.currentUser;
     if(!user){openLogin(()=>continueAction(btn));return;}
     const state=await getAccessState(user);
