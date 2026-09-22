@@ -22,9 +22,9 @@ body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--cr
 #pageContent{display:none}
 header.topbar{background:var(--teal);color:#fff;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
 .brand{font-size:20px;font-weight:800;letter-spacing:.5px}.brand span{color:var(--gold)}
-.user-area{display:flex;align-items:center;gap:12px;font-size:13.5px}
+.user-area{display:flex;align-items:center;gap:10px;font-size:13.5px}
 #userEmail{background:rgba(255,255,255,.1);padding:6px 12px;border-radius:20px;color:var(--gold-light);word-break:break-all}
-#logoutBtn{background:var(--gold);color:var(--teal-dark);border:0;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer}
+#logoutBtn,#topLoginBtn{border:0;padding:8px 16px;border-radius:8px;font-weight:700;font-size:13.5px;cursor:pointer}#logoutBtn{background:var(--gold);color:var(--teal-dark)}#topLoginBtn{background:#fff;color:var(--teal-dark)}#logoutBtn:disabled{opacity:.65;cursor:not-allowed}
 main{max-width:1100px;margin:0 auto;padding:30px 20px 60px}
 .hero{text-align:center;margin-bottom:34px}.hero h1{font-size:30px;color:var(--teal);margin:0 0 6px;font-weight:800}.hero p{color:#5b6b69;font-size:15px;margin:0}
 h2.section-title{font-size:18px;color:var(--teal-dark);border-left:4px solid var(--gold);padding-left:10px;margin:34px 0 16px}
@@ -60,7 +60,7 @@ footer.contact-footer{text-align:center;padding:34px 20px 20px;margin-top:30px;b
 @media(max-width:600px){.quick-contact-card{flex-direction:column;align-items:flex-start}.quick-contact-actions{justify-content:flex-start}.quick-contact-actions a{font-size:11.5px}}</style></head><body>
 <div id="loadingScreen"><div class="spinner"></div><div id="loadingText">Checking sign-in status…</div></div>
 <div id="authScreen"><div class="login-card"><button id="closeAuth" type="button" style="float:right;background:transparent;border:0;font-size:22px;cursor:pointer;color:#687572" aria-label="Close">×</button><div class="login-logo">CMA<span>.</span></div><div class="login-title">CMA MCQ Portal</div><p class="login-sub">Sign in with an authorised Google account to continue.</p><button id="googleLogin" type="button"><span id="googleLoginLabel">Continue with Google</span></button><div id="authMessage"></div></div></div>
-<div id="pageContent"><header class="topbar"><div class="brand">CMA<span>.</span> MCQ Portal</div><div class="user-area"><span id="userEmail"></span><button id="logoutBtn" type="button">Sign out</button></div></header><main><div class="hero"><h1>CMA</h1><p>MCQ Practice &amp; Full-Fledged Test</p></div><div class="quick-contact-card">
+<div id="pageContent"><header class="topbar"><div class="brand">CMA<span>.</span> MCQ Portal</div><div class="user-area"><span id="userEmail"></span><button id="topLoginBtn" type="button">Login</button><button id="logoutBtn" type="button" class="hidden">Logout</button></div></header><main><div class="hero"><h1>CMA</h1><p>MCQ Practice &amp; Full-Fledged Test</p></div><div class="quick-contact-card">
   <div>
     <div class="quick-contact-title">Need Help or Want to Share Feedback?</div>
     <div class="quick-contact-sub">Your feedback is very important to us. Have a problem, suggestion, or found an error?</div>
@@ -128,6 +128,7 @@ const googleLoginLabel=document.getElementById("googleLoginLabel");
 const authMessage=document.getElementById("authMessage");
 const userEmail=document.getElementById("userEmail");
 const logoutBtn=document.getElementById("logoutBtn");
+const topLoginBtn=document.getElementById("topLoginBtn");
 const accessTags=document.getElementById("accessTags");
 const expiryText=document.getElementById("expiryText");
 const finalGroup3Content=document.getElementById("finalGroup3Content");
@@ -376,16 +377,28 @@ googleLogin.addEventListener("click",function(){
  });
 });
 
-logoutBtn.addEventListener("click",function(){
- logoutBtn.disabled=true;
- logoutBtn.textContent="Signing out…";
- const uid=auth.currentUser&&auth.currentUser.uid;
- stopActivityTracking();
- if(uid)sessionStorage.removeItem("cma_login_recorded_"+uid);
- auth.signOut().finally(function(){
-   logoutBtn.disabled=false;
-   logoutBtn.textContent="Sign out";
- });
+topLoginBtn.addEventListener("click",function(){
+  showAuthModal();
+});
+
+logoutBtn.addEventListener("click",async function(){
+  if(!auth.currentUser)return;
+  logoutBtn.disabled=true;
+  logoutBtn.textContent="Logging out…";
+  const uid=auth.currentUser.uid;
+  stopActivityTracking();
+  if(uid){
+    sessionStorage.removeItem("cma_login_recorded_"+uid);
+    sessionStorage.removeItem("cma_login_event_recorded_"+uid);
+  }
+  try{
+    await auth.signOut();
+  }catch(error){
+    console.error("Logout failed:",error);
+    logoutBtn.disabled=false;
+    logoutBtn.textContent="Logout";
+    alert("Logout failed. Please try again.");
+  }
 });
 
 auth.onAuthStateChanged(async function(user){
@@ -396,13 +409,23 @@ auth.onAuthStateChanged(async function(user){
     stopActivityTracking();
     currentTrackedUser=null;
     userEmail.textContent="";
-    // Home page stays public. Login is requested only when protected content is opened.
+    userEmail.classList.add("hidden");
+    logoutBtn.classList.add("hidden");
+    logoutBtn.disabled=false;
+    logoutBtn.textContent="Logout";
+    topLoginBtn.classList.remove("hidden");
+    // Home page stays public. Login button is always visible until the user signs in.
     showHome();
     return;
   }
 
   currentTrackedUser=user;
   userEmail.textContent=user.email||"";
+  userEmail.classList.remove("hidden");
+  topLoginBtn.classList.add("hidden");
+  logoutBtn.classList.remove("hidden");
+  logoutBtn.disabled=false;
+  logoutBtn.textContent="Logout";
 
   // Login is no longer required to enter the home page.
   // If the user is already signed in, record activity without blocking the portal.
