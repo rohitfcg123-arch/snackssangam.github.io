@@ -9,7 +9,7 @@ body{margin:0;font-family:'Segoe UI',Roboto,Arial,sans-serif;background:var(--cr
 #loadingScreen{position:fixed;inset:0;background:var(--teal);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:999;color:var(--gold-light)}
 #loadingScreen .spinner{width:44px;height:44px;border:4px solid rgba(255,255,255,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .9s linear infinite;margin-bottom:16px}
 @keyframes spin{to{transform:rotate(360deg)}}
-#authScreen{display:none;min-height:100vh;align-items:center;justify-content:center;padding:24px}
+#authScreen{display:none;position:fixed;inset:0;background:rgba(8,38,39,.62);align-items:center;justify-content:center;padding:24px;z-index:5000}
 .login-card{background:var(--card-bg);border:1px solid var(--border);border-radius:16px;padding:40px 32px;max-width:420px;width:100%;text-align:center;box-shadow:0 10px 30px rgba(13,59,62,.12)}
 .login-logo{font-size:34px;font-weight:800;color:var(--teal);letter-spacing:1px}.login-logo span{color:var(--gold)}
 .login-title{font-size:20px;font-weight:700;margin-top:10px;color:var(--teal-dark)}
@@ -59,7 +59,7 @@ footer.contact-footer{text-align:center;padding:34px 20px 20px;margin-top:30px;b
 .feedback-contact a:hover{transform:translateY(-1px)}
 @media(max-width:600px){.quick-contact-card{flex-direction:column;align-items:flex-start}.quick-contact-actions{justify-content:flex-start}.quick-contact-actions a{font-size:11.5px}}</style></head><body>
 <div id="loadingScreen"><div class="spinner"></div><div id="loadingText">Checking sign-in status…</div></div>
-<div id="authScreen"><div class="login-card"><div class="login-logo">CMA<span>.</span></div><div class="login-title">CMA MCQ Portal</div><p class="login-sub">Sign in with an authorised Google account to continue.</p><button id="googleLogin" type="button"><span id="googleLoginLabel">Continue with Google</span></button><div id="authMessage"></div></div></div>
+<div id="authScreen"><div class="login-card"><button id="closeAuth" type="button" style="float:right;background:transparent;border:0;font-size:22px;cursor:pointer;color:#687572" aria-label="Close">×</button><div class="login-logo">CMA<span>.</span></div><div class="login-title">CMA MCQ Portal</div><p class="login-sub">Sign in with an authorised Google account to continue.</p><button id="googleLogin" type="button"><span id="googleLoginLabel">Continue with Google</span></button><div id="authMessage"></div></div></div>
 <div id="pageContent"><header class="topbar"><div class="brand">CMA<span>.</span> MCQ Portal</div><div class="user-area"><span id="userEmail"></span><button id="logoutBtn" type="button">Sign out</button></div></header><main><div class="hero"><h1>CMA</h1><p>MCQ Practice &amp; Full-Fledged Test</p></div><div class="quick-contact-card">
   <div>
     <div class="quick-contact-title">Need Help or Want to Share Feedback?</div>
@@ -361,6 +361,12 @@ auth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(console.error);
 googleLogin.addEventListener("click",function(){
  googleLogin.disabled=true;
  googleLoginLabel.textContent="Signing in…";
+ if(location.protocol==="file:"){
+   setMessage("Please open the GitHub Pages HTTPS URL to sign in.","error");
+   googleLogin.disabled=false;
+   googleLoginLabel.textContent="Continue with Google";
+   return;
+ }
  setMessage("");
  auth.signInWithRedirect(provider).catch(function(error){
    console.error(error);
@@ -383,48 +389,104 @@ logoutBtn.addEventListener("click",function(){
 });
 
 auth.onAuthStateChanged(async function(user){
- googleLogin.disabled=false;
- googleLoginLabel.textContent="Continue with Google";
+  googleLogin.disabled=false;
+  googleLoginLabel.textContent="Continue with Google";
 
- if(!user){
-   stopActivityTracking();
-   showLogin();
-   return;
- }
+  if(!user){
+    stopActivityTracking();
+    currentTrackedUser=null;
+    userEmail.textContent="";
+    // Home page stays public. Login is requested only when protected content is opened.
+    showHome();
+    return;
+  }
 
- showLoading("Checking your examination access…");
+  currentTrackedUser=user;
+  userEmail.textContent=user.email||"";
 
- try{
-   const result=await verifyAccess(user);
+  // Login is no longer required to enter the home page.
+  // If the user is already signed in, record activity without blocking the portal.
+  trackUserLogin(user).catch(function(error){
+    console.error("Non-blocking user tracking error:",error);
+  });
+  startActivityTracking(user);
 
-   if(!result.approved){
-     await auth.signOut();
-     setMessage(result.reason,"error");
-     showLogin();
-     return;
-   }
-
-   userEmail.textContent=user.email||"";
-   applyAccess(result.data||{},!!result.admin);
-
-   // Tracking is non-blocking: a tracking failure must never prevent portal access.
-   trackUserLogin(user).catch(function(error){
-     console.error("Non-blocking user tracking error:",error);
-   });
-   startActivityTracking(user);
-
-   setMessage("");
-   showHome();
- }catch(error){
-   console.error("Access verification failed:",error);
-   stopActivityTracking();
-   await auth.signOut();
-   setMessage("Unable to verify access right now. Please try again.","error");
-   showLogin();
- }
+  // Load access information when available, but do not block the home page.
+  try{
+    const result=await verifyAccess(user);
+    if(result && result.approved){
+      applyAccess(result.data||{},!!result.admin);
+    }else{
+      // Keep all home content visible; protected subject pages can perform their own access check.
+      showAllPortalSections();
+    }
+  }catch(error){
+    console.error("Non-blocking access check:",error);
+    showAllPortalSections();
+  }
+  hideAuthModal();
+  showHome();
 });
 
-showLoading();
+function showAllPortalSections(){
+  [
+    "foundationContent",
+    "interGroup1Content",
+    "interGroup2Content",
+    "finalGroup3Content",
+    "finalGroup4Content"
+  ].forEach(function(id){
+    const el=document.getElementById(id);
+    if(el)el.classList.remove("hidden");
+  });
+  if(noContentMessage)noContentMessage.classList.add("hidden");
+}
+
+function showAuthModal(){
+  authScreen.style.display="flex";
+  setMessage("");
+  googleLogin.disabled=false;
+  googleLoginLabel.textContent="Continue with Google";
+}
+
+function hideAuthModal(){
+  authScreen.style.display="none";
+  setMessage("");
+}
+
+const closeAuth=document.getElementById("closeAuth");
+if(closeAuth){
+  closeAuth.addEventListener("click",hideAuthModal);
+}
+
+authScreen.addEventListener("click",function(e){
+  if(e.target===authScreen)hideAuthModal();
+});
+
+// Any subject/full-test link requires Google login first.
+// The home page itself remains completely public.
+pageContent.addEventListener("click",function(e){
+  const link=e.target.closest("a[href]");
+  if(!link)return;
+  const href=link.getAttribute("href")||"";
+  if(!href || href.startsWith("#") || href.startsWith("mailto:") || href.startsWith("https://wa.me/"))return;
+
+  const protectedPath =
+    href.includes("/index.html") ||
+    href.includes("full-test") ||
+    href.includes("subject");
+
+  if(!protectedPath)return;
+
+  if(!auth.currentUser){
+    e.preventDefault();
+    showAuthModal();
+    return;
+  }
+});
+
+showAllPortalSections();
+showHome();
 })();
 </script>
 </body></html>
