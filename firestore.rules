@@ -1,83 +1,27 @@
 rules_version = '2';
-
 service cloud.firestore {
   match /databases/{database}/documents {
-
-    function signedIn() { return request.auth != null; }
-    function isAdmin() {
-      return signedIn() && request.auth.token.email == "rohit.fcg123@gmail.com";
-    }
-    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
-
-    match /portalUsers/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid) || isAdmin();
-      allow delete: if isAdmin();
-    }
-
-    match /attempts/{attemptId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if isAdmin();
-    }
-
-    match /access/{email} {
-      allow read: if isAdmin() || (signedIn() && request.auth.token.email == email);
-      allow create, update, delete: if isAdmin();
-    }
-
-    match /payments/{paymentId} {
-      allow read, create, update, delete: if isAdmin();
-    }
-
-    match /loginEvents/{eventId} {
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow read, update, delete: if isAdmin();
-    }
-
-    match /portalVisits/{visitId} {
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow read, update, delete: if isAdmin();
-    }
-
-    match /settings/access {
-      allow read: if true;
-      allow write: if isAdmin();
-    }
-
-    match /settings/{document} {
-      allow read, write: if isAdmin();
-    }
-
-    match /referralCodes/{code} {
-      allow read: if signedIn();
-      allow write: if isAdmin();
-    }
-
-    match /admins/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow write: if isAdmin();
-    }
-
-    match /subscriptions/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow write: if isAdmin();
-    }
-
-    match /approvedUsers/{email} {
-      allow read, write: if isAdmin();
-    }
-
-    match /users/{uid} {
-      allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid);
-      allow update: if isAdmin() || isOwner(uid);
-      allow delete: if isAdmin();
-    }
-
-    match /{document=**} {
-      allow read, write: if false;
-    }
+    function signedIn(){ return request.auth != null; }
+    function isAdmin(){ return signedIn() && request.auth.token.email == "rohit.fcg123@gmail.com"; }
+    function isOwner(uid){ return signedIn() && request.auth.uid == uid; }
+    function sameEmail(email){ return signedIn() && request.auth.token.email == email; }
+    match /portalUsers/{uid}{ allow read: if isOwner(uid)||isAdmin(); allow create: if isOwner(uid); allow update: if isOwner(uid)||isAdmin(); allow delete: if isAdmin(); }
+    match /users/{uid}{ allow read: if isOwner(uid)||isAdmin(); allow create: if isOwner(uid); allow update: if isOwner(uid)||isAdmin(); allow delete: if isAdmin(); }
+    match /access/{email}{ allow read: if isAdmin()||sameEmail(email); allow create,update,delete: if isAdmin(); }
+    match /subscriptions/{uid}{ allow read: if isOwner(uid)||isAdmin(); allow write: if isAdmin(); }
+    match /approvedUsers/{email}{ allow read,write: if isAdmin(); }
+    match /admins/{uid}{ allow read: if isOwner(uid)||isAdmin(); allow write: if isAdmin(); }
+    match /settings/access{ allow read: if signedIn(); allow write: if isAdmin(); }
+    match /settings/{document}{ allow read,write: if isAdmin(); }
+    match /settingsHistory/{entryId}{ allow read,create,update,delete: if isAdmin(); }
+    match /attempts/{attemptId}{ allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid); allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow update,delete: if isAdmin(); }
+    match /payments/{paymentId}{ allow read,create,update,delete: if isAdmin(); }
+    match /loginEvents/{eventId}{ allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read,update,delete: if isAdmin(); }
+    match /portalVisits/{visitId}{ allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read,update,delete: if isAdmin(); }
+    match /featureUsage/{usageId}{ allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read,update,delete: if isAdmin(); }
+    match /wrongAnswers/{entryId}{ allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid); allow update,delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid); }
+    match /bookmarks/{entryId}{ allow create: if signedIn() && request.resource.data.uid == request.auth.uid; allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid); allow update,delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid); }
+    match /referralCodes/{code}{ allow read: if signedIn(); allow write: if isAdmin(); }
+    match /{document=**}{ allow read,write: if false; }
   }
 }
