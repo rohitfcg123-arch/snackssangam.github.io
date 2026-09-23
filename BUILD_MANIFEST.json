@@ -1,0 +1,20 @@
+{
+  "subject_files": 22,
+  "common_css": "css/common.css",
+  "common_js": [
+    "js/core.js",
+    "js/subject-engine.js",
+    "js/popup-manager.js",
+    "js/subscription.js",
+    "js/ads-manager.js",
+    "js/analytics.js"
+  ],
+  "config": "config/portal-config.js",
+  "home": "index.html",
+  "subjects": "subjects.html",
+  "payment": "payment.html",
+  "admin": "admin.html",
+  "firestore_rules": "firestore.rules",
+  "default_free_question_limit": 20,
+  "default_free_attempt_limit": 5
+}
