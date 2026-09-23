@@ -1,11 +1,4 @@
-
-(function(){
-window.CMA_POPUP={
- openPremium:function(message){
-   let b=document.getElementById("cmaPremiumModal");
-   if(!b){b=document.createElement("div");b.id="cmaPremiumModal";b.className="modal-backdrop";b.innerHTML='<div class="modal"><h2>🔒 Free Practice Limit Reached</h2><p id="cmaPremiumMessage"></p><div class="modal-actions"><button class="btn gold" id="cmaBuyPremium">Buy Premium Plan</button><button class="btn" id="cmaContinueFree">Continue with Free Version</button></div></div>';document.body.appendChild(b);b.querySelector("#cmaBuyPremium").onclick=()=>location.href="payment.html";b.querySelector("#cmaContinueFree").onclick=()=>b.style.display="none"}
-   b.querySelector("#cmaPremiumMessage").textContent=message||"Free practice limit reached. Please buy a Premium Plan.";b.style.display="flex";
- },
- close:function(){const b=document.getElementById("cmaPremiumModal");if(b)b.style.display="none"}
-};
+(function(){'use strict';
+function ensure(){let b=document.getElementById('cmaAccessPopup');if(b)return b;b=document.createElement('div');b.id='cmaAccessPopup';b.style.cssText='display:none;position:fixed;inset:0;background:rgba(8,38,39,.62);backdrop-filter:blur(4px);z-index:99999;align-items:center;justify-content:center;padding:18px';b.innerHTML='<div style="width:min(430px,100%);background:#fffdf8;border-radius:18px;border:1px solid #e5dece;padding:25px;box-shadow:0 25px 70px rgba(0,0,0,.25);font-family:Inter,Segoe UI,Arial,sans-serif"><button id="cmaPopupClose" style="float:right;border:0;background:none;font-size:25px;cursor:pointer">×</button><div style="font-size:30px">🔒</div><h2 style="color:#082627;margin:10px 0 7px">Premium Access Required</h2><p id="cmaPremiumMessage" style="color:#5b6b69;font-size:14px;line-height:1.55">This feature is available with a subscription.</p><div style="display:flex;gap:9px;margin-top:18px"><button id="cmaBuySubscription" style="flex:1;border:0;border-radius:10px;padding:12px;background:#c8a24a;color:#082627;font-weight:800;cursor:pointer">💳 Buy Subscription</button><button id="cmaPopupCancel" style="flex:1;border:1px solid #e5dece;border-radius:10px;padding:12px;background:#fff;color:#0d3b3e;font-weight:700;cursor:pointer">Close</button></div></div>';document.body.appendChild(b);const close=()=>b.style.display='none';b.querySelector('#cmaPopupClose').onclick=close;b.querySelector('#cmaPopupCancel').onclick=close;b.querySelector('#cmaBuySubscription').onclick=()=>location.href='payment.html';b.onclick=e=>{if(e.target===b)close()};return b}
+window.cmaShowAccessPopup=function(message){const b=ensure();b.querySelector('#cmaPremiumMessage').textContent=message||'This feature requires premium access. Please buy a subscription to continue.';b.style.display='flex'};
 })();
