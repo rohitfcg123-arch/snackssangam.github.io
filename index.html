@@ -10,6 +10,13 @@ const params=new URLSearchParams(location.search);const returnPage=params.get("r
 function renderHome(user){const area=document.getElementById("subjectsArea"),box=document.getElementById("authBox"),email=document.getElementById("loginEmail"),g=document.getElementById("authGoogle"),h=document.getElementById("heroLogin");if(user){area.style.display="block";box.style.display="none";email.textContent=user.email;g.style.display="none";h.textContent="✓ Signed in";h.disabled=true;if(returnPage){setTimeout(()=>location.href=returnPage,250);}}else{area.style.display="none";box.style.display="block";email.style.display="none";g.style.display="block";h.disabled=false;h.textContent="🔐 Sign in to Start";}}
 document.getElementById("authGoogle").onclick=()=>CMA_AUTH.signInWithPopup(CMA_PROVIDER).catch(e=>showNotice(e.message||"Login failed."));
 document.getElementById("heroLogin").onclick=()=>CMA_AUTH.signInWithPopup(CMA_PROVIDER).catch(e=>showNotice(e.message||"Login failed."));
-document.addEventListener("click",e=>{const a=e.target.closest("a.protected-link");if(!a)return;if(!CMA_AUTH.currentUser){e.preventDefault();showNotice("Please sign in first.");CMA_AUTH.signInWithPopup(CMA_PROVIDER).then(()=>location.href=a.href).catch(()=>{});}});
+document.addEventListener("click",async e=>{
+const a=e.target.closest("a.protected-link");
+if(!a)return;
+e.preventDefault();
+const user=await waitForAuth();
+if(user){ location.href=a.href; }
+else{ showNotice("Please sign in first."); CMA_AUTH.signInWithPopup(CMA_PROVIDER).then(()=>location.href=a.href).catch(()=>{}); }
+});
 CMA_AUTH.onAuthStateChanged(renderHome);setupSessionUI();
 </script></body></html>
