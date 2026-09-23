@@ -1,15 +1,16 @@
-# CMA MCQ Portal — Updated Access Control
+# CMA MCQ Portal
 
-This package preserves the existing subject engines and adds centralized Admin-controlled access rules.
+Upload this folder as-is to GitHub Pages. Subject HTML files remain in the root. Shared assets are in `css/`, `js/`, and `config/`.
+
+## New admin controls
+- Premium user: All Services / Partly Access
+- Group-wise access and expiry
+- Public subscription pricing
+- Direct discounts without promo code
+- Promo-code discounts
+- Payment / UTR and richer user records
+- Settings history and reports
 
 ## Firebase
-Deploy `firestore.rules` to the `cma-mcq-portal-cf33f` Firebase project.
-
-## Admin
-Open `admin.html` and sign in with the authorised admin account. Global settings are stored in `settings/access`; per-user access is stored in `access/{email}`; setting changes are recorded in `settingsHistory`.
-
-## Subjects
-All 22 subject HTML files were updated in-place. Existing MCQ/PYQ/timer/bookmark/retry/chapter functionality is retained; the access gate now reads the central settings and per-user overrides.
-
-## Note
-Client-side rules protect normal portal behavior but are not a substitute for server-side entitlement validation if the question bank itself must be strongly protected from extraction.
+Project: `cma-mcq-portal-cf33f`
+Admin: `rohit.fcg123@gmail.com`
