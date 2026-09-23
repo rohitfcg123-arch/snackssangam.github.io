@@ -284,41 +284,50 @@ setup();
 
 </script>
 
+<style id="cma-access-gate-style">
+#cmaFreeLimitModal{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;padding:18px;font-family:Arial,sans-serif}
+.cma-limit-backdrop{position:absolute;inset:0;background:rgba(0,0,0,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(3px)}
+.cma-limit-card{position:relative;width:min(430px,100%);background:#fff;border-radius:18px;padding:28px 22px 22px;box-shadow:0 22px 70px rgba(0,0,0,.35);text-align:center;border:1px solid #e5e7eb}
+.cma-limit-card h2{margin:6px 0 10px;color:#0d3b3e;font-size:24px;line-height:1.25}
+.cma-limit-card p{margin:8px 0;color:#3f4b49;line-height:1.5}
+.cma-limit-card strong{color:#0d3b3e}
+.cma-limit-close{position:absolute;right:12px;top:10px;border:0;background:transparent;color:#66706e;font-size:28px;line-height:1;cursor:pointer;padding:4px 8px}
+.cma-limit-actions{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.cma-limit-actions button{width:100%;min-height:46px;border:0;border-radius:10px;padding:12px 16px;font-size:15px;font-weight:700;cursor:pointer;transition:transform .12s ease,opacity .12s ease}
+.cma-limit-actions button:hover{transform:translateY(-1px);opacity:.95}
+.cma-buy-plan{background:#0d3b3e;color:#fff}
+.cma-continue-free{background:#f3f4f2;color:#0d3b3e;border:1px solid #ccd4d1!important}
+.cma-limit-note{font-size:12px!important;color:#7a8582!important;margin-top:12px!important}
+@media(max-width:480px){.cma-limit-card{padding:26px 16px 18px}.cma-limit-card h2{font-size:21px}}
+</style>
 <script id="cma-access-gate-script">
 (function(){
 "use strict";
 
 const ADMIN_EMAIL="rohit.fcg123@gmail.com";
-const GROUP="foundation";
 const GROUP_LABEL="CMA Foundation";
 const ACCESS_GROUP="foundation";
-
-/* Change this one filename later if your uploaded payment page has another name. */
-const PAYMENT_PAGE="payment.html";
+const PAYMENT_PAGE="payment_portal_referral_updated.html";
+const ATTEMPT_KEY="cma_foundation_free_attempts_v2";
 
 const auth=firebase.auth();
 const db=firebase.firestore();
 
 function norm(v){return(v||"").toString().trim().toLowerCase();}
+function num(v, fallback){const n=Number(v);return Number.isFinite(n)?Math.floor(n):fallback;}
 
 let settingsCache=null;
 async function getSiteSettings(){
   if(settingsCache)return settingsCache;
-  const defaults={freeAccessMode:"fixedPool",freePoolSize:30,siteWideFree:false};
+  const defaults={freeAccessMode:"fixedPool",freePoolSize:30,freeAttemptLimit:5,siteWideFree:false};
   try{
     const snap=await db.collection("settings").doc("access").get();
     settingsCache=snap.exists?Object.assign({},defaults,snap.data()):defaults;
   }catch(e){
-    console.warn("Access settings unavailable; using 30 free questions.",e);
+    console.warn("Access settings unavailable; using defaults.",e);
     settingsCache=defaults;
   }
   return settingsCache;
-}
-
-async function getFreeLimit(){
-  const s=await getSiteSettings();
-  const n=Number(s.freePoolSize);
-  return Math.max(1,Number.isFinite(n)?Math.floor(n):30);
 }
 
 async function hasPaidAccess(){
@@ -346,92 +355,135 @@ function closePopup(){
   if(m)m.remove();
 }
 
-function openPopup(limit){
+function openPopup(limit, mode){
   if(document.getElementById("cmaFreeLimitModal"))return;
+  const isAttempts=mode==="attemptLimit";
+  const title=isAttempts?"Free Attempts Finished":"Free Practice Limit Reached";
+  const text=isAttempts
+    ? `You have used all <strong>${limit} free attempts</strong>.`
+    : `You can solve <strong>up to question ${limit}</strong> for free.`;
+  const more=isAttempts
+    ? "Purchase a premium plan to continue practicing."
+    : `Question ${limit+1} is available with a premium plan.`;
   const m=document.createElement("div");
   m.id="cmaFreeLimitModal";
   m.innerHTML=`
     <div class="cma-limit-backdrop">
-      <div class="cma-limit-card" role="dialog" aria-modal="true">
+      <div class="cma-limit-card" role="dialog" aria-modal="true" aria-labelledby="cmaLimitTitle">
         <button class="cma-limit-close" aria-label="Close">×</button>
-        <div style="font-size:34px;margin-bottom:8px">🔒</div>
-        <h2>Free Practice Limit Reached</h2>
-        <p>You can solve <strong>${limit} questions</strong> for free.</p>
-        <p style="font-size:13px;color:#75807d">Continue with a paid plan to solve more questions.</p>
+        <div style="font-size:36px;margin-bottom:8px">🔒</div>
+        <h2 id="cmaLimitTitle">${title}</h2>
+        <p>${text}</p>
+        <p class="cma-limit-note">${more}</p>
         <div class="cma-limit-actions">
-          <button class="cma-buy-plan">Buy Plan</button>
-          <button class="cma-continue-free">Continue with Free Version</button>
+          <button class="cma-buy-plan" type="button">Buy Premium Plan</button>
+          <button class="cma-continue-free" type="button">Continue with Free Version</button>
         </div>
       </div>
     </div>`;
   document.body.appendChild(m);
   m.querySelector(".cma-limit-close").onclick=closePopup;
   m.querySelector(".cma-continue-free").onclick=closePopup;
-  m.querySelector(".cma-buy-plan").onclick=()=>{location.href=PAYMENT_PAGE;};
-  m.querySelector(".cma-limit-backdrop").onclick=e=>{
-    if(e.target===e.currentTarget)closePopup();
-  };
+  m.querySelector(".cma-buy-plan").onclick=()=>{window.location.href=PAYMENT_PAGE;};
+  m.querySelector(".cma-limit-backdrop").onclick=e=>{if(e.target===e.currentTarget)closePopup();};
 }
 
-async function allowNext(){
-  const limit=await getFreeLimit();
+function getLocalAttemptCount(){
+  try{return Math.max(0,parseInt(localStorage.getItem(ATTEMPT_KEY)||"0",10)||0);}catch(e){return 0;}
+}
+function setLocalAttemptCount(n){
+  try{localStorage.setItem(ATTEMPT_KEY,String(Math.max(0,n)));}catch(e){}
+}
 
-  /* Paid/admin users are never blocked. */
-  if(await hasPaidAccess())return true;
-
-  /*
-    state.pos is zero-based in this quiz:
-    pos 0 = Q1, pos 1 = Q2 ... pos 29 = Q30.
-    Clicking Next from Q30 attempts to open Q31.
-  */
-  if(typeof state==="undefined" || !Array.isArray(state.pool))return true;
-
-  const currentNumber=Number(state.pos)+1;
-  if(currentNumber < limit)return true;
-
-  /* At Q30 with a 30-question free limit, block Q31. */
-  if(currentNumber >= limit){
-    openPopup(limit);
-    return false;
+async function getAttemptCount(){
+  const user=auth.currentUser;
+  if(!user)return getLocalAttemptCount();
+  try{
+    const snap=await db.collection("attempts").where("uid","==",user.uid).where("group","==","foundation").get();
+    return snap.size;
+  }catch(e){
+    return getLocalAttemptCount();
   }
+}
+
+async function recordAttempt(){
+  const current=await getAttemptCount();
+  const user=auth.currentUser;
+  if(user){
+    try{
+      await db.collection("attempts").add({uid:user.uid,email:user.email||"",group:"foundation",createdAt:firebase.firestore.FieldValue.serverTimestamp(),type:"freeAttempt"});
+      return current+1;
+    }catch(e){
+      setLocalAttemptCount(current+1);
+      return current+1;
+    }
+  }
+  setLocalAttemptCount(current+1);
+  return current+1;
+}
+
+async function allowStart(){
+  const s=await getSiteSettings();
+  if(s.siteWideFree)return true;
+  if(await hasPaidAccess())return true;
+  const mode=String(s.freeAccessMode||"fixedPool");
+  if(mode!=="attemptLimit")return true;
+  const limit=Math.max(1,num(s.freeAttemptLimit,5));
+  const used=await getAttemptCount();
+  if(used>=limit){openPopup(limit,"attemptLimit");return false;}
+  await recordAttempt();
   return true;
 }
 
-/*
-  IMPORTANT:
-  We do NOT intercept Start Practice.
-  Therefore Q1 can start without Google approval/access.
-  We intercept only the Next button in the quiz.
-*/
+async function allowNext(){
+  const s=await getSiteSettings();
+  if(s.siteWideFree)return true;
+  if(await hasPaidAccess())return true;
+  const mode=String(s.freeAccessMode||"fixedPool");
+  if(mode!=="fixedPool")return true;
+  const limit=Math.max(1,num(s.freePoolSize,30));
+  if(typeof state==="undefined" || !Array.isArray(state.pool))return true;
+  const currentNumber=Number(state.pos)+1;
+  if(currentNumber<limit)return true;
+  openPopup(limit,"fixedPool");
+  return false;
+}
+
+let startBusy=false;
 document.addEventListener("click",async function(e){
-  const btn=e.target.closest("#next");
-  if(!btn)return;
-  if(btn.dataset.cmaGateBusy==="1")return;
+  const nextBtn=e.target.closest("#next");
+  const startBtn=e.target.closest("#start");
+  if(!nextBtn && !startBtn)return;
+  if(startBtn && startBtn.dataset.cmaGateBusy==="1")return;
+  if(nextBtn && nextBtn.dataset.cmaGateBusy==="1")return;
 
-  e.preventDefault();
-  e.stopImmediatePropagation();
-
-  const ok=await allowNext();
-  if(!ok)return;
-
-  /*
-    Run the original Next handler exactly once.
-    The original handler was assigned with element.onclick.
-  */
-  const original=btn.onclick;
-  btn.dataset.cmaGateBusy="1";
-  try{
-    if(typeof original==="function"){
-      btn.onclick=null;
-      original.call(btn,e);
-      btn.onclick=original;
-    }
-  }finally{
-    btn.dataset.cmaGateBusy="0";
+  if(startBtn){
+    e.preventDefault();e.stopImmediatePropagation();
+    if(startBusy)return;
+    startBusy=true;startBtn.dataset.cmaGateBusy="1";
+    try{
+      const ok=await allowStart();
+      if(!ok)return;
+      const original=startBtn.onclick;
+      if(typeof original==="function"){
+        startBtn.onclick=null;original.call(startBtn,e);startBtn.onclick=original;
+      }
+    }finally{startBtn.dataset.cmaGateBusy="0";startBusy=false;}
+    return;
   }
+
+  e.preventDefault();e.stopImmediatePropagation();
+  nextBtn.dataset.cmaGateBusy="1";
+  try{
+    const ok=await allowNext();
+    if(!ok)return;
+    const original=nextBtn.onclick;
+    if(typeof original==="function"){
+      nextBtn.onclick=null;original.call(nextBtn,e);nextBtn.onclick=original;
+    }
+  }finally{nextBtn.dataset.cmaGateBusy="0";}
 },true);
 
-/* Keep the existing login/logout bar functional, but never gate free Q1-Qlimit. */
 auth.onAuthStateChanged(user=>{
   const emailEl=document.getElementById("cmaSessionEmail");
   const loginBtn=document.getElementById("cmaLoginBtn");
