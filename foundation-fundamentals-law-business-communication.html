@@ -439,7 +439,7 @@ async function continueAction(btn){
       return null;
     })();
     if(state.allowed && !state.paid && selectedCount && selectedCount>Number(state.maxQuestions||999999)){
-      showNotice("Free access allows only "+state.maxQuestions+" questions. Please reduce the question count or purchase full access.");
+      if(typeof cmaShowAccessPopup==="function") cmaShowAccessPopup("Free access allows only "+state.maxQuestions+" questions. Please reduce the question count or purchase full access."); else showNotice("Free access allows only "+state.maxQuestions+" questions. Please reduce the question count or purchase full access.");
       return;
     }
     if(state.allowed && !state.features.reattemptWrong && /wrong/i.test(btn.textContent||"")){
