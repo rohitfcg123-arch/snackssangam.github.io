@@ -1,10 +1,10 @@
 /*
 FILE: js/auth-login.js
-REFERENCE: FIREBASE-AUTH-V1
-PURPOSE: Email/password login and account creation for CMA Zone.
+REFERENCE: FIREBASE-AUTH-V2
+PURPOSE: Email/password and Google authentication for CMA Zone.
 EDITABLE AREAS: Successful-login redirect and UI messages.
 DEPENDENCIES: js/firebase.js, pages/signin.html.
-IMPORTANT NOTES: Successful authentication redirects to the site root using an absolute URL derived from the current page, avoiding relative-path/cache issues.
+IMPORTANT NOTES: Google uses redirect authentication, so getRedirectResult must be processed when the browser returns from Google.
 LAST UPDATED: 2026-10-04
 */
 
@@ -16,7 +16,8 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect
+  signInWithRedirect,
+  getRedirectResult
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const loginForm = document.getElementById("loginForm");
@@ -41,8 +42,10 @@ function firebaseMessage(error) {
     "auth/weak-password": "Password should be at least 6 characters.",
     "auth/too-many-requests": "Too many attempts. Please try again later.",
     "auth/unauthorized-domain": "This website domain is not authorized in Firebase Authentication. Add rohitfcg123-arch.github.io in Firebase Authentication → Settings → Authorized domains.",
-    "auth/operation-not-allowed": "Email/Password sign-in is not enabled in this Firebase project.",
-    "auth/network-request-failed": "Network request failed. Check your internet connection."
+    "auth/operation-not-allowed": "This sign-in method is not enabled in this Firebase project.",
+    "auth/network-request-failed": "Network request failed. Check your internet connection.",
+    "auth/popup-blocked": "The sign-in window was blocked. Please allow it and try again.",
+    "auth/account-exists-with-different-credential": "An account already exists with this email using another sign-in method."
   };
   return map[error.code] || ("Firebase error: " + (error.code || "unknown") + " — " + (error.message || "Please try again."));
 }
@@ -51,6 +54,17 @@ function goHome() {
   showMessage("Login successful. Opening CMA Zone…", "success");
   const homeUrl = new URL("../index.html", window.location.href).href;
   window.location.replace(homeUrl);
+}
+
+async function handleGoogleRedirect() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      goHome();
+    }
+  } catch (error) {
+    showMessage(firebaseMessage(error), "error");
+  }
 }
 
 function setMode(mode) {
@@ -127,6 +141,9 @@ document.getElementById("forgotPassword")?.addEventListener("click", async () =>
     showMessage(firebaseMessage(error), "error");
   }
 });
+
+// Process the result after Google sends the browser back to this page.
+handleGoogleRedirect();
 
 // Do not redirect merely because a session already exists.
 onAuthStateChanged(auth, () => {});
