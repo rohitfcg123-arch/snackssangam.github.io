@@ -1,8 +1,8 @@
 /*
 FILE: css/study.css
-REFERENCE: CMA-ZONE-STUDY-V1
-PURPOSE: Presentation for the simple subject-first study tracker.
-EDITABLE AREAS: Study screen spacing, subject rows and active states.
+REFERENCE: CMA-ZONE-STUDY-V2
+PURPOSE: Presentation for the subject-first study tracker and custom subject controls.
+EDITABLE AREAS: Study screen spacing, subject rows, setup state and custom-subject modal.
 DEPENDENCIES: css/variables.css, css/base.css
 IMPORTANT NOTES: Timer behaviour belongs in js/study.js; do not place tracking logic in CSS.
 LAST UPDATED: 2026-10-04
@@ -20,13 +20,35 @@ LAST UPDATED: 2026-10-04
 .subject-list h1{margin:0;font-size:24px;letter-spacing:-.02em}
 .section-note{margin:6px 0 16px;color:var(--color-muted);font-size:14px}
 .subject-row{width:100%;display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:15px 4px;border:0;border-bottom:1px solid var(--color-border);background:transparent;color:var(--color-text);text-align:left;cursor:pointer}
-.subject-row:last-child{border-bottom:0}
+.subject-row:last-of-type{border-bottom:0}
 .subject-row:hover{background:#f8faff}
 .subject-play{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:var(--color-blue);color:#fff;font-size:18px}
 .subject-row.active .subject-play{background:var(--color-green)}
-.subject-name{font-size:16px;font-weight:650}
-.subject-meta{margin-top:2px;color:var(--color-muted);font-size:12px}
+.subject-name{display:block;font-size:16px;font-weight:650}
+.subject-meta{display:block;margin-top:2px;color:var(--color-muted);font-size:12px}
 .subject-time{font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+.study-setup{display:flex;flex-direction:column;gap:7px;padding:14px 4px 16px;border-bottom:1px solid var(--color-border)}
+.study-setup strong{font-size:15px}
+.study-setup span{color:var(--color-muted);font-size:13px;line-height:1.45}
+.study-setup a{align-self:flex-start;margin-top:4px;padding:9px 13px;border-radius:10px;background:var(--color-blue);color:#fff;text-decoration:none;font-size:13px;font-weight:700}
+.custom-add-row{width:100%;display:flex;align-items:center;gap:12px;padding:14px 4px;border:0;background:transparent;color:var(--color-text);text-align:left;cursor:pointer}
+.custom-add-row:hover{background:#f8faff}
+.custom-add-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;border:1.5px dashed var(--color-blue);color:var(--color-blue);font-size:24px;line-height:1}
+.custom-add-row strong{display:block;font-size:14px}
+.custom-add-row small{display:block;margin-top:3px;color:var(--color-muted);font-size:12px;line-height:1.35}
+.custom-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:rgba(10,25,50,.52)}
+.custom-modal.hidden{display:none}
+.custom-modal-card{position:relative;width:min(100%,430px);padding:24px;border-radius:20px;background:var(--color-surface);box-shadow:0 20px 60px rgba(0,0,0,.22)}
+.custom-modal-card h2{margin:2px 0 8px;font-size:23px}
+.custom-modal-card p:not(.eyebrow){margin:0 0 18px;color:var(--color-muted);font-size:13px;line-height:1.5}
+.custom-modal-card label{display:block;margin-bottom:6px;font-size:13px;font-weight:700}
+.custom-modal-card input{width:100%;box-sizing:border-box;padding:12px 13px;border:1px solid var(--color-border);border-radius:10px;background:#fff;color:var(--color-text);font:inherit;outline:none}
+.custom-modal-card input:focus{border-color:var(--color-blue);box-shadow:0 0 0 3px rgba(47,111,237,.12)}
+.custom-modal-close{position:absolute;top:10px;right:12px;border:0;background:transparent;color:var(--color-muted);font-size:28px;cursor:pointer}
+.custom-modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:18px}
+.primary-btn,.secondary-btn{border:0;border-radius:10px;padding:10px 14px;font:inherit;font-size:13px;font-weight:700;cursor:pointer}
+.primary-btn{background:var(--color-blue);color:#fff}
+.secondary-btn{background:#eef2f8;color:var(--color-text)}
 @media(max-width:560px){
   .study-page{padding-top:12px}
   .study-summary{padding:22px 14px}
@@ -34,4 +56,5 @@ LAST UPDATED: 2026-10-04
   .subject-row{grid-template-columns:44px 1fr auto;gap:10px;padding:14px 2px}
   .subject-name{font-size:15px}
   .subject-time{font-size:14px}
+  .custom-modal-card{padding:21px}
 }
