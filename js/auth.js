@@ -120,6 +120,6 @@ document.getElementById("forgotPassword")?.addEventListener("click", async () =>
 
 onAuthStateChanged(auth, (user) => {
   if (user && window.location.pathname.endsWith("/login.html")) {
-    window.location.href = "../index.html";
+    showMessage("You are already signed in. You can continue to CMA Zone.", "success");
   }
 });
