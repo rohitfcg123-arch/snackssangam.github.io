@@ -1,6 +1,6 @@
 /*
 FILE: js/stats.js
-REFERENCE: CMA-ZONE-STUDY-STATS-V3
+REFERENCE: CMA-ZONE-STUDY-STATS-V4
 PURPOSE: Live student study dashboard with period, day, week, month and trend views.
 EDITABLE AREAS: Dashboard calculations, navigation and chart presentation.
 DEPENDENCIES: index.html, css/home.css, js/firebase.js, js/academic.js.
@@ -17,7 +17,11 @@ const tabs = document.querySelectorAll("[data-report-view]");
 let user = null, days = {}, customSubjects = [];
 let selectedDay = today(), weekStart = monday(today()), monthKey = today().slice(0,7), periodEnd = today();
 
-function today(){ return new Date().toISOString().slice(0,10); }
+function today(){
+  const now=new Date();
+  const y=now.getFullYear(), m=String(now.getMonth()+1).padStart(2,"0"), d=String(now.getDate()).padStart(2,"0");
+  return `${y}-${m}-${d}`;
+}
 function date(k){ const [y,m,d]=k.split("-").map(Number); return new Date(Date.UTC(y,m-1,d)); }
 function key(d){ return d.toISOString().slice(0,10); }
 function add(k,n){ const d=date(k); d.setUTCDate(d.getUTCDate()+n); return key(d); }
@@ -49,9 +53,13 @@ async function load(){
   try{
     const snap=await getDocs(collection(db,"users",user.uid,"studyDays"));
     days={}; snap.forEach(x=>{if(x.id!=="__config__")days[x.id]=x.data();});
+  }catch(e){console.error("Firestore studyDays read failed:",e);days={};}
+  try{
     const c=await getDoc(doc(db,"users",user.uid,"studyDays","__config__"));
-    customSubjects=c.exists()&&Array.isArray(c.data().customSubjects)?c.data().customSubjects:[]; 
-  }catch(e){console.error(e);days={};customSubjects=[];}
+    customSubjects=c.exists()&&Array.isArray(c.data().customSubjects)
+      ? c.data().customSubjects.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>[String(x[0]),String(x[1])])
+      : [];
+  }catch(e){console.error("Firestore custom subject read failed:",e);customSubjects=[];}
 }
 
 function nav(title,prev,next,nextDisabled=false){
