@@ -14,6 +14,7 @@ const $ = id => document.getElementById(id);
 const level = $("levelSelect");
 const group = $("groupSelect");
 const subjects = $("subjectList");
+const startStudy = $("startStudy");
 
 /* December 2026 ICMAI examination dates. */
 const EXAM_DATES = {
@@ -135,6 +136,7 @@ level.onchange = () => {
   state.attemptName = "";
   save();
   render();
+  updateStartStudyLink();
   tick();
 };
 
@@ -147,12 +149,24 @@ group.onchange = () => {
   tick();
 };
 
+function updateStartStudyLink() {
+  if (!startStudy) return;
+  if (level.value && group.value) {
+    startStudy.href = "pages/study.html?level=" + encodeURIComponent(level.value) + "&group=" + encodeURIComponent(group.value);
+    startStudy.classList.remove("disabled-link");
+  } else {
+    startStudy.href = "pages/study.html";
+    startStudy.classList.add("disabled-link");
+  }
+}
+
 $("saveProfile").onclick = () => {
   state.level = level.value;
   state.group = group.value;
   syncExamDateToSelection();
   save();
   $("profileStatus").textContent = "Selection saved on this device.";
+  updateStartStudyLink();
   tick();
 };
 
@@ -230,5 +244,6 @@ if (state.revisionName) {
   $("revisionView").classList.remove("hidden");
 }
 
+updateStartStudyLink();
 tick();
 setInterval(tick, 60000);
