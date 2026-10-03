@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#14213D">
+  <title>Study — CMA Zone</title>
+  <link rel="stylesheet" href="css/variables.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/study.css">
+</head>
+<body>
+  <header class="app-header study-header">
+    <a class="back-link" href="index.html" aria-label="Back">←</a>
+    <div>
+      <strong>Study</strong>
+      <span class="brand-subtitle">Tap a subject to start tracking</span>
+    </div>
+  </header>
+
+  <main class="study-page">
+    <section class="study-summary">
+      <p class="eyebrow">TODAY</p>
+      <div class="summary-time" id="todayTotal">00:00:00</div>
+      <p class="summary-label">Total study time</p>
+      <div class="active-status" id="activeStatus">Choose a subject to begin.</div>
+    </section>
+
+    <section class="subject-list" aria-label="Subjects">
+      <h1>Subjects</h1>
+      <p class="section-note">Tap the subject you are studying. Starting another subject automatically switches tracking.</p>
+      <div id="subjectList"></div>
+    </section>
+  </main>
+
+  <script src="js/study.js"></script>
+</body>
+</html>
