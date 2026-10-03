@@ -39,7 +39,7 @@ LAST UPDATED: 2026-10-04
 .auth-secondary .auth-link-button{margin-left:4px}
 .auth-message{min-height:22px;margin:14px 0 0;font-size:14px;font-weight:700;text-align:center}
 .auth-message.error{color:#b42318}
-.auth-message.success{color:#16794b}
+.auth-message.success{color:#16794b}.already-signed-in{margin-top:12px}.already-signed-in a{display:flex;align-items:center;justify-content:center;text-decoration:none;box-sizing:border-box}
 .hidden{display:none!important}
 @media (max-width:520px){
   .auth-page{width:min(calc(100% - 24px),480px);padding:28px 0 48px}
@@ -87,8 +87,9 @@ LAST UPDATED: 2026-10-04
 </section>
 
 <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+<div id="alreadySignedIn" class="already-signed-in hidden"><a class="auth-primary" href="../index.html">Continue to CMA Zone</a></div>
 </main>
 
-<script type="module" src="../js/auth.js?v=20261004i"></script>
+<script type="module" src="../js/auth.js?v=20261004k"></script>
 </body>
 </html>
