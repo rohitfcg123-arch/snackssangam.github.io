@@ -24,6 +24,8 @@ const greetingCard = $("greetingCard");
 const greetingTitle = $("greetingTitle");
 const greetingQuote = $("greetingQuote");
 const logoutButton = $("logoutButton");
+const loginButton = $("loginButton");
+const headerLogout = $("headerLogout");
 
 const MOTIVATIONAL_QUOTES = [
   "Small progress every day becomes a big result.",
@@ -44,8 +46,12 @@ function showStudentGreeting(user) {
   if (!greetingCard) return;
   if (!user) {
     greetingCard.classList.add("hidden");
+    loginButton?.classList.remove("hidden");
+    headerLogout?.classList.add("hidden");
     return;
   }
+  loginButton?.classList.add("hidden");
+  headerLogout?.classList.remove("hidden");
   const name = getGreetingName(user);
   greetingTitle.textContent = "Hi " + name + " 👋";
   greetingQuote.textContent = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
@@ -53,10 +59,13 @@ function showStudentGreeting(user) {
 }
 
 onAuthStateChanged(auth, showStudentGreeting);
-logoutButton?.addEventListener("click", async () => {
+async function performLogout() {
   await signOut(auth);
   window.location.reload();
-});
+}
+
+logoutButton?.addEventListener("click", performLogout);
+headerLogout?.addEventListener("click", performLogout);
 
 function enforceStartStudyPlacement() {
   if (!startStudy || !subjects) return;
