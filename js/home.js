@@ -79,7 +79,7 @@ function groupOptions() {
 
   const data = ACADEMIC[level.value].groups;
 
-  Object.keys(data).forEach(key => {
+  Object.keys(data).filter(key => key !== "electives").forEach(key => {
     const option = document.createElement("option");
     option.value = key;
     option.textContent = groupLabel(key);
