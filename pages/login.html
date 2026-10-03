@@ -1,4 +1,65 @@
 <!DOCTYPE html>
-<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><meta name="theme-color" content="#14213D"><title>Login — CMA Zone</title><link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/base.css"></head>
-<body><header class="app-header"><a href="../index.html" style="color:#fff;text-decoration:none;font-size:28px">←</a><div><strong>Login</strong><span class="brand-subtitle">CMA Zone</span></div></header>
-<main style="width:min(100% - 24px,480px);margin:auto;padding:32px 0"><section class="welcome-card" style="padding:24px"><p class="eyebrow">CMA ZONE</p><h1 style="font-size:32px">Welcome back</h1><p class="welcome-text">Your login screen is ready. Secure account authentication will be connected in the approved authentication step.</p><label>Email<input type="email" placeholder="you@example.com" style="width:100%;min-height:46px;margin:6px 0 14px;padding:0 12px;border:1px solid var(--color-border);border-radius:10px"></label><label>Password<input type="password" placeholder="Password" style="width:100%;min-height:46px;margin:6px 0 14px;padding:0 12px;border:1px solid var(--color-border);border-radius:10px"></label><button class="primary-button" style="width:100%" type="button">Login</button></section></main></body></html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#14213D">
+<title>Login — CMA Zone</title>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<style>
+.auth-panel{padding:24px}
+.auth-panel h1{font-size:32px;margin-bottom:8px}
+.auth-panel form{display:grid;gap:14px}
+.auth-panel label{font-weight:700}
+.auth-panel input{width:100%;min-height:46px;margin-top:6px;padding:0 12px;border:1px solid var(--color-border);border-radius:10px;box-sizing:border-box}
+.auth-actions{display:grid;gap:10px}
+.auth-secondary{text-align:center}
+.auth-message{min-height:22px;margin:4px 0 0;font-size:14px;font-weight:700}
+.auth-message.error{color:#b42318}
+.auth-message.success{color:#16794b}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<header class="app-header">
+<a href="../index.html" style="color:#fff;text-decoration:none;font-size:28px">←</a>
+<div><strong>Login</strong><span class="brand-subtitle">CMA Zone</span></div>
+</header>
+
+<main style="width:min(100% - 24px,480px);margin:auto;padding:32px 0">
+
+<section class="welcome-card auth-panel" id="loginPanel">
+<p class="eyebrow">CMA ZONE</p>
+<h1>Welcome back</h1>
+<p class="welcome-text">Sign in to continue to your CMA preparation tracker.</p>
+<form id="loginForm">
+<label>Email<input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+<label>Password<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required></label>
+<div class="auth-actions">
+<button class="primary-button" type="submit">Login</button>
+<button class="text-button" id="forgotPassword" type="button">Forgot password?</button>
+</div>
+</form>
+<p class="auth-secondary">New to CMA Zone? <button class="text-button" id="showRegister" type="button">Create account</button></p>
+</section>
+
+<section class="welcome-card auth-panel hidden" id="registerPanel">
+<p class="eyebrow">CMA ZONE</p>
+<h1>Create account</h1>
+<p class="welcome-text">Create your personal CMA Zone account.</p>
+<form id="registerForm">
+<label>Email<input id="registerEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
+<label>Password<input id="registerPassword" type="password" autocomplete="new-password" placeholder="At least 6 characters" minlength="6" required></label>
+<label>Confirm password<input id="registerConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password" minlength="6" required></label>
+<button class="primary-button" type="submit">Create account</button>
+</form>
+<p class="auth-secondary">Already have an account? <button class="text-button" id="showLogin" type="button">Login</button></p>
+</section>
+
+<p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
+</main>
+
+<script type="module" src="../js/auth.js"></script>
+</body>
+</html>
