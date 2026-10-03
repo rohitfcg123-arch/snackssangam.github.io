@@ -15,18 +15,17 @@
 <section class="dashboard-grid">
 <article class="panel"><div class="panel-heading"><div><p class="eyebrow">ACADEMIC SETUP</p><h2>Choose your course</h2></div></div>
 <div class="field-grid"><label>Level<select id="levelSelect"><option value="">Select level</option><option value="foundation">Foundation</option><option value="inter">Intermediate</option><option value="final">Final</option></select></label>
-<label>Group<select id="groupSelect" disabled><option value="">Select group</option></select></label></div>
+<label id="groupWrap">Group<select id="groupSelect" disabled><option value="">Select group</option></select></label></div>
 <div id="profileStatus" class="profile-status">Select your level and group.</div></article>
 <article class="panel"><div class="panel-heading"><div><p class="eyebrow">COUNTDOWN</p><h2>Attempt</h2></div><button class="text-button" id="editAttempt" type="button">Edit</button></div>
 <div class="countdown-number" id="attemptCountdown">—</div><div class="countdown-label" id="attemptDateLabel">Set your attempt date</div>
 <div class="countdown-edit hidden" id="attemptEditor"><label>Attempt name<input id="attemptName" value="December 2026 Attempt"></label><label>Exam date<input id="attemptDate" type="date" value="2026-12-10"></label><button class="primary-button" id="saveAttempt" type="button">Save Attempt</button></div></article>
 </section>
 <section class="panel"><div class="panel-heading"><div><p class="eyebrow">YOUR SUBJECTS</p><h2>Subjects for selected group</h2></div></div><div id="subjectList" class="subject-grid"><div class="empty-state">Select your level and group to see subjects.</div></div></section>
-<section class="dashboard-grid">
-<article class="panel"><div class="panel-heading"><div><p class="eyebrow">PRACTICE</p><h2>Practice now</h2></div></div><div class="practice-grid"><button class="practice-card" type="button"><strong>MCQ</strong><span>Quick practice tests</span></button><button class="practice-card" type="button"><strong>PYQ</strong><span>Previous year questions</span></button><button class="practice-card" type="button"><strong>Subjective</strong><span>Written-answer practice</span></button></div></article>
-<article class="panel"><div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div>
+<section class="panel">
+<div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div>
 <div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div>
-<div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div></article>
+<div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div>
 </section>
 </main><script src="js/home.js"></script>
 </body></html>
