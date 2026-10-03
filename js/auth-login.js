@@ -1,10 +1,10 @@
 /*
 FILE: js/auth-login.js
-REFERENCE: FIREBASE-AUTH-V2
+REFERENCE: FIREBASE-AUTH-V3
 PURPOSE: Email/password and Google authentication for CMA Zone.
 EDITABLE AREAS: Successful-login redirect and UI messages.
 DEPENDENCIES: js/firebase.js, pages/signin.html.
-IMPORTANT NOTES: Google uses redirect authentication, so getRedirectResult must be processed when the browser returns from Google.
+IMPORTANT NOTES: Google uses popup authentication to avoid redirect-storage issues on GitHub Pages/Chrome.
 LAST UPDATED: 2026-10-04
 */
 
@@ -16,8 +16,7 @@ import {
   sendPasswordResetEmail,
   onAuthStateChanged,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const loginForm = document.getElementById("loginForm");
@@ -42,9 +41,10 @@ function firebaseMessage(error) {
     "auth/weak-password": "Password should be at least 6 characters.",
     "auth/too-many-requests": "Too many attempts. Please try again later.",
     "auth/unauthorized-domain": "This website domain is not authorized in Firebase Authentication. Add rohitfcg123-arch.github.io in Firebase Authentication → Settings → Authorized domains.",
-    "auth/operation-not-allowed": "This sign-in method is not enabled in this Firebase project.",
+    "auth/operation-not-allowed": "Google sign-in is not enabled in Firebase Authentication. Enable Google under Authentication → Sign-in method.",
     "auth/network-request-failed": "Network request failed. Check your internet connection.",
-    "auth/popup-blocked": "The sign-in window was blocked. Please allow it and try again.",
+    "auth/popup-blocked": "Google sign-in popup was blocked. Allow popups for this site and try again.",
+    "auth/popup-closed-by-user": "Google sign-in was cancelled. Please try again.",
     "auth/account-exists-with-different-credential": "An account already exists with this email using another sign-in method."
   };
   return map[error.code] || ("Firebase error: " + (error.code || "unknown") + " — " + (error.message || "Please try again."));
@@ -54,17 +54,6 @@ function goHome() {
   showMessage("Login successful. Opening CMA Zone…", "success");
   const homeUrl = new URL("../index.html", window.location.href).href;
   window.location.replace(homeUrl);
-}
-
-async function handleGoogleRedirect() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result?.user) {
-      goHome();
-    }
-  } catch (error) {
-    showMessage(firebaseMessage(error), "error");
-  }
 }
 
 function setMode(mode) {
@@ -80,7 +69,10 @@ document.getElementById("googleLogin")?.addEventListener("click", async () => {
   showMessage("Opening Google sign-in…");
   try {
     const provider = new GoogleAuthProvider();
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    if (result?.user) {
+      goHome();
+    }
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
   }
@@ -141,9 +133,6 @@ document.getElementById("forgotPassword")?.addEventListener("click", async () =>
     showMessage(firebaseMessage(error), "error");
   }
 });
-
-// Process the result after Google sends the browser back to this page.
-handleGoogleRedirect();
 
 // Do not redirect merely because a session already exists.
 onAuthStateChanged(auth, () => {});
