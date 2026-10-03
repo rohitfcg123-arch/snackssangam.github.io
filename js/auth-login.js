@@ -3,8 +3,8 @@ FILE: js/auth-login.js
 REFERENCE: FIREBASE-AUTH-V1
 PURPOSE: Email/password login and account creation for CMA Zone.
 EDITABLE AREAS: Successful-login redirect and UI messages.
-DEPENDENCIES: js/firebase.js, pages/login.html.
-IMPORTANT NOTES: Email/Password must be enabled in Firebase Authentication before login or registration can succeed.
+DEPENDENCIES: js/firebase.js, pages/signin.html.
+IMPORTANT NOTES: Successful authentication redirects to the site root using an absolute URL derived from the current page, avoiding relative-path/cache issues.
 LAST UPDATED: 2026-10-04
 */
 
@@ -47,6 +47,12 @@ function firebaseMessage(error) {
   return map[error.code] || ("Firebase error: " + (error.code || "unknown") + " — " + (error.message || "Please try again."));
 }
 
+function goHome() {
+  showMessage("Login successful. Opening CMA Zone…", "success");
+  const homeUrl = new URL("../index.html", window.location.href).href;
+  window.location.replace(homeUrl);
+}
+
 function setMode(mode) {
   const register = mode === "register";
   loginPanel.classList.toggle("hidden", register);
@@ -65,6 +71,7 @@ document.getElementById("googleLogin")?.addEventListener("click", async () => {
     showMessage(firebaseMessage(error), "error");
   }
 });
+
 document.getElementById("showLogin")?.addEventListener("click", () => setMode("login"));
 
 loginForm?.addEventListener("submit", async (event) => {
@@ -76,7 +83,7 @@ loginForm?.addEventListener("submit", async (event) => {
 
   try {
     await signInWithEmailAndPassword(auth, email, password);
-    window.location.href = "../index.html";
+    goHome();
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
   }
@@ -99,7 +106,7 @@ registerForm?.addEventListener("submit", async (event) => {
   try {
     const credential = await createUserWithEmailAndPassword(auth, email, password);
     await updateProfile(credential.user, { displayName: name });
-    window.location.href = "../index.html";
+    goHome();
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
   }
@@ -121,5 +128,5 @@ document.getElementById("forgotPassword")?.addEventListener("click", async () =>
   }
 });
 
-// Intentionally do not redirect authenticated users away from this page.
+// Do not redirect merely because a session already exists.
 onAuthStateChanged(auth, () => {});
