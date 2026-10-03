@@ -15,6 +15,8 @@ const level = $("levelSelect");
 const group = $("groupSelect");
 const subjects = $("subjectList");
 const startStudy = $("startStudy");
+const electiveWrap = $("electiveWrap");
+const electiveSelect = $("electiveSelect");
 
 /* December 2026 ICMAI examination dates. */
 const EXAM_DATES = {
@@ -45,6 +47,28 @@ function groupLabel(key) {
   return "Foundation";
 }
 
+function renderElectiveOptions() {
+  if (!electiveWrap || !electiveSelect) return;
+
+  const show = level.value === "final" && group.value === "g4";
+  electiveWrap.classList.toggle("hidden", !show);
+
+  if (!show) {
+    electiveSelect.value = "";
+    return;
+  }
+
+  electiveSelect.innerHTML = '<option value="">Select elective</option>';
+  ACADEMIC.final.groups.electives.forEach((subject, index) => {
+    const option = document.createElement("option");
+    option.value = subject[0];
+    option.textContent = subject[0] + " — " + subject[1];
+    electiveSelect.appendChild(option);
+  });
+
+  electiveSelect.value = state.elective || "";
+}
+
 function groupOptions() {
   group.innerHTML = '<option value="">Select group</option>';
 
@@ -70,6 +94,7 @@ function groupOptions() {
   }
 
   group.disabled = false;
+  renderElectiveOptions();
 }
 
 function list() {
@@ -83,7 +108,12 @@ function list() {
       .flatMap(key => data[key]);
   }
 
-  return data[group.value] || [];
+  const selected = data[group.value] || [];
+  if (level.value === "final" && group.value === "g4" && state.elective) {
+    const elective = data.electives.find(subject => subject[0] === state.elective);
+    return elective ? [...selected, elective] : selected;
+  }
+  return selected;
 }
 
 function render() {
@@ -132,6 +162,7 @@ level.onchange = () => {
   groupOptions();
   state.level = level.value;
   state.group = "";
+  state.elective = "";
   state.attemptDate = "";
   state.attemptName = "";
   save();
@@ -143,6 +174,8 @@ level.onchange = () => {
 group.onchange = () => {
   state.level = level.value;
   state.group = group.value;
+  state.elective = "";
+  renderElectiveOptions();
   syncExamDateToSelection();
   save();
   render();
@@ -153,7 +186,13 @@ group.onchange = () => {
 function updateStartStudyLink() {
   if (!startStudy) return;
   if (level.value && group.value) {
-    startStudy.href = "pages/study.html?level=" + encodeURIComponent(level.value) + "&group=" + encodeURIComponent(group.value);
+    const needsElective = level.value === "final" && group.value === "g4";
+    if (needsElective && !state.elective) {
+      startStudy.href = "pages/study.html";
+      startStudy.classList.add("disabled-link");
+      return;
+    }
+    startStudy.href = "pages/study.html?level=" + encodeURIComponent(level.value) + "&group=" + encodeURIComponent(group.value) + "&elective=" + encodeURIComponent(state.elective || "");
     startStudy.classList.remove("disabled-link");
   } else {
     startStudy.href = "pages/study.html";
@@ -161,9 +200,19 @@ function updateStartStudyLink() {
   }
 }
 
+if (electiveSelect) {
+  electiveSelect.onchange = () => {
+    state.elective = electiveSelect.value;
+    save();
+    render();
+    updateStartStudyLink();
+  };
+}
+
 $("saveProfile").onclick = () => {
   state.level = level.value;
   state.group = group.value;
+  state.elective = electiveSelect?.value || "";
   syncExamDateToSelection();
   save();
   $("profileStatus").textContent = "Selection saved on this device.";
@@ -232,6 +281,7 @@ if (state.level && ACADEMIC[state.level]) {
   level.value = state.level;
   groupOptions();
   group.value = state.group || "";
+  renderElectiveOptions();
   render();
 }
 
