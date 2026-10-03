@@ -231,18 +231,35 @@ $("saveProfile").onclick = () => {
   tick();
 };
 
-function days(date) {
+function countdownParts(date) {
   if (!date) return null;
 
-  const target = new Date(date + "T23:59:59");
-  return Math.max(0, Math.ceil((target - Date.now()) / 86400000));
+  const target = new Date(date + "T00:00:00").getTime();
+  const remaining = Math.max(0, target - Date.now());
+
+  return {
+    days: Math.floor(remaining / 86400000),
+    hours: Math.floor((remaining % 86400000) / 3600000),
+    minutes: Math.floor((remaining % 3600000) / 60000),
+    seconds: Math.floor((remaining % 60000) / 1000)
+  };
+}
+
+function countdownHTML(parts) {
+  if (!parts) return "—";
+
+  return '<div class="countdown-units">' +
+    '<div class="countdown-unit"><strong>' + String(parts.days).padStart(2, "0") + '</strong><span>Days</span></div>' +
+    '<div class="countdown-unit"><strong>' + String(parts.hours).padStart(2, "0") + '</strong><span>Hours</span></div>' +
+    '<div class="countdown-unit"><strong>' + String(parts.minutes).padStart(2, "0") + '</strong><span>Minutes</span></div>' +
+    '<div class="countdown-unit"><strong>' + String(parts.seconds).padStart(2, "0") + '</strong><span>Seconds</span></div>' +
+    '</div>';
 }
 
 function tick() {
-  const attemptDays = days(state.attemptDate);
+  const attemptParts = countdownParts(state.attemptDate);
 
-  $("attemptCountdown").textContent =
-    attemptDays === null ? "—" : attemptDays + " days";
+  $("attemptCountdown").innerHTML = countdownHTML(attemptParts);
 
   $("attemptDateLabel").textContent =
     state.attemptDate
@@ -250,10 +267,9 @@ function tick() {
         " • First exam: " + state.attemptDate
       : "Select your course and group";
 
-  const revisionDays = days(state.revisionDate);
+  const revisionParts = countdownParts(state.revisionDate);
 
-  $("revisionCountdown").textContent =
-    revisionDays === null ? "—" : revisionDays + " days";
+  $("revisionCountdown").innerHTML = countdownHTML(revisionParts);
 }
 
 $("editAttempt").onclick = () => {
@@ -308,4 +324,4 @@ if (state.revisionName) {
 
 updateStartStudyLink();
 tick();
-setInterval(tick, 60000);
+setInterval(tick, 1000);
