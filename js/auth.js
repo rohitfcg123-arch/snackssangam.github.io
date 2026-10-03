@@ -11,6 +11,7 @@ LAST UPDATED: 2026-10-04
 import { auth } from "./firebase.js";
 import {
   createUserWithEmailAndPassword,
+  updateProfile,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   onAuthStateChanged,
@@ -80,6 +81,7 @@ loginForm?.addEventListener("submit", async (event) => {
 
 registerForm?.addEventListener("submit", async (event) => {
   event.preventDefault();
+  const name = document.getElementById("registerName").value.trim();
   const email = document.getElementById("registerEmail").value.trim();
   const password = document.getElementById("registerPassword").value;
   const confirm = document.getElementById("registerConfirm").value;
@@ -92,7 +94,8 @@ registerForm?.addEventListener("submit", async (event) => {
   showMessage("Creating your account…");
 
   try {
-    await createUserWithEmailAndPassword(auth, email, password);
+    const credential = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(credential.user, { displayName: name });
     window.location.href = "../index.html";
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
