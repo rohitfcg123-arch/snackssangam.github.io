@@ -10,11 +10,11 @@
 <style>
 /*
 FILE: pages/signin.html
-REFERENCE: FIREBASE-AUTH-V1
+REFERENCE: FIREBASE-AUTH-V2
 PURPOSE: CMA Zone authentication screen.
 EDITABLE AREAS: Authentication copy and spacing.
 DEPENDENCIES: ../css/variables.css, ../css/base.css, ../js/auth-login.js.
-IMPORTANT NOTES: Successful authentication explicitly redirects to the Home page.
+IMPORTANT NOTES: Google redirect result is processed by auth-login.js when Google returns to this page.
 LAST UPDATED: 2026-10-04
 */
 .auth-page{width:min(calc(100% - 32px),480px);margin:0 auto;padding:48px 0 64px}
@@ -88,6 +88,6 @@ LAST UPDATED: 2026-10-04
 <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
 </main>
 
-<script type="module" src="../js/auth-login.js?v=20261004p"></script>
+<script type="module" src="../js/auth-login.js?v=20261004q"></script>
 </body>
 </html>
