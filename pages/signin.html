@@ -14,7 +14,7 @@ REFERENCE: FIREBASE-AUTH-V1
 PURPOSE: CMA Zone authentication screen.
 EDITABLE AREAS: Authentication copy and spacing.
 DEPENDENCIES: ../css/variables.css, ../css/base.css, ../js/auth-login.js.
-IMPORTANT NOTES: This page intentionally does not redirect already-authenticated users. Cache-busting version is updated whenever auth JS is changed.
+IMPORTANT NOTES: Successful authentication explicitly redirects to the Home page.
 LAST UPDATED: 2026-10-04
 */
 .auth-page{width:min(calc(100% - 32px),480px);margin:0 auto;padding:48px 0 64px}
@@ -40,8 +40,6 @@ LAST UPDATED: 2026-10-04
 .auth-message{min-height:22px;margin:14px 0 0;font-size:14px;font-weight:700;text-align:center}
 .auth-message.error{color:#b42318}
 .auth-message.success{color:#16794b}
-.already-signed-in{margin-top:12px}
-.already-signed-in a{display:flex;align-items:center;justify-content:center;text-decoration:none;box-sizing:border-box}
 .hidden{display:none!important}
 @media (max-width:520px){
   .auth-page{width:min(calc(100% - 24px),480px);padding:28px 0 48px}
@@ -90,6 +88,6 @@ LAST UPDATED: 2026-10-04
 <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
 </main>
 
-<script type="module" src="../js/auth-login.js?v=20261004o"></script>
+<script type="module" src="../js/auth-login.js?v=20261004p"></script>
 </body>
 </html>
