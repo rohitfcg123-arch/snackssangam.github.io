@@ -12,6 +12,7 @@ const STORAGE_KEY = "cma_zone_study_v1";
 const HOME_KEY = "cma_zone_home_v1";
 
 const params = new URLSearchParams(window.location.search);
+const queryElective = params.get("elective") || "";
 
 const state = loadState();
 const SUBJECTS = getSelectedSubjects();
@@ -27,7 +28,7 @@ function loadHomeSelection() {
       : !!groups[queryGroup];
 
     if (validGroup) {
-      const selection = { level: queryLevel, group: queryGroup };
+      const selection = { level: queryLevel, group: queryGroup, elective: queryElective };
       localStorage.setItem(HOME_KEY, JSON.stringify(selection));
       return selection;
     }
@@ -52,7 +53,12 @@ function getSelectedSubjects() {
       .flatMap(key => groups[key]);
   }
 
-  return groups[selection.group] || [];
+  const selected = groups[selection.group] || [];
+  if (selection.level === "final" && selection.group === "g4" && selection.elective) {
+    const elective = groups.electives?.find(subject => subject[0] === selection.elective);
+    return elective ? [...selected, elective] : selected;
+  }
+  return selected;
 }
 
 function todayKey() {
