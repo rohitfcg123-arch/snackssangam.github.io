@@ -9,12 +9,12 @@
 <link rel="stylesheet" href="../css/base.css">
 <style>
 /*
-FILE: pages/login.html
+FILE: pages/signin.html
 REFERENCE: FIREBASE-AUTH-V1
 PURPOSE: CMA Zone authentication screen.
 EDITABLE AREAS: Authentication copy and spacing.
-DEPENDENCIES: ../css/variables.css, ../css/base.css, ../js/auth.js.
-IMPORTANT NOTES: Keep authentication controls consistent with the CMA Zone design system.
+DEPENDENCIES: ../css/variables.css, ../css/base.css, ../js/auth-login.js.
+IMPORTANT NOTES: This page intentionally does not redirect already-authenticated users. Cache-busting version is updated whenever auth JS is changed.
 LAST UPDATED: 2026-10-04
 */
 .auth-page{width:min(calc(100% - 32px),480px);margin:0 auto;padding:48px 0 64px}
@@ -39,7 +39,9 @@ LAST UPDATED: 2026-10-04
 .auth-secondary .auth-link-button{margin-left:4px}
 .auth-message{min-height:22px;margin:14px 0 0;font-size:14px;font-weight:700;text-align:center}
 .auth-message.error{color:#b42318}
-.auth-message.success{color:#16794b}.already-signed-in{margin-top:12px}.already-signed-in a{display:flex;align-items:center;justify-content:center;text-decoration:none;box-sizing:border-box}
+.auth-message.success{color:#16794b}
+.already-signed-in{margin-top:12px}
+.already-signed-in a{display:flex;align-items:center;justify-content:center;text-decoration:none;box-sizing:border-box}
 .hidden{display:none!important}
 @media (max-width:520px){
   .auth-page{width:min(calc(100% - 24px),480px);padding:28px 0 48px}
@@ -55,7 +57,6 @@ LAST UPDATED: 2026-10-04
 </header>
 
 <main class="auth-page">
-
 <section class="welcome-card auth-panel" id="loginPanel">
 <p class="eyebrow">CMA ZONE</p>
 <h1>Welcome back</h1>
@@ -87,9 +88,8 @@ LAST UPDATED: 2026-10-04
 </section>
 
 <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
-<div id="alreadySignedIn" class="already-signed-in hidden"><a class="auth-primary" href="../index.html">Continue to CMA Zone</a></div>
 </main>
 
-<script type="module" src="../js/auth-login.js?v=20261004n"></script>
+<script type="module" src="../js/auth-login.js?v=20261004o"></script>
 </body>
 </html>
