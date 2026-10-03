@@ -1,23 +1,41 @@
 /*
 FILE: js/study.js
-REFERENCE: CMA-ZONE-STUDY-V1
-PURPOSE: First real study-tracking engine: subject click starts, same subject pauses, another subject switches.
-EDITABLE AREAS: Subject master for this screen and local persistence key.
-DEPENDENCIES: pages/study.html, css/study.css, browser localStorage.
-IMPORTANT NOTES: This V1 stores data locally for testing only. Production sync/authentication will be added after the verified foundation.
+REFERENCE: CMA-ZONE-STUDY-V2
+PURPOSE: Subject-first study timer using the subjects selected on the Home screen.
+EDITABLE AREAS: Storage key and tracker behaviour.
+DEPENDENCIES: pages/study.html, css/study.css, js/academic.js, Home selection in localStorage.
+IMPORTANT NOTES: This V1 stores data locally for testing only. One subject can be active at a time.
 LAST UPDATED: 2026-10-04
 */
 
 const STORAGE_KEY = "cma_zone_study_v1";
-
-const SUBJECTS = [
-  { id: "scm", name: "Strategic Cost Management" },
-  { id: "sfm", name: "Strategic Financial Management" },
-  { id: "law", name: "Corporate and Economic Laws" },
-  { id: "dt", name: "Direct and International Taxation" }
-];
+const HOME_KEY = "cma_zone_home_v1";
 
 const state = loadState();
+const SUBJECTS = getSelectedSubjects();
+
+function loadHomeSelection() {
+  try {
+    return JSON.parse(localStorage.getItem(HOME_KEY) || "{}");
+  } catch {
+    return {};
+  }
+}
+
+function getSelectedSubjects() {
+  const selection = loadHomeSelection();
+  if (!selection.level || !selection.group || !ACADEMIC[selection.level]) return [];
+
+  const groups = ACADEMIC[selection.level].groups;
+
+  if (selection.group === "both") {
+    return ["g1", "g2", "g3", "g4"]
+      .filter(key => groups[key])
+      .flatMap(key => groups[key]);
+  }
+
+  return groups[selection.group] || [];
+}
 
 function todayKey() {
   return new Date().toISOString().slice(0, 10);
@@ -52,7 +70,9 @@ function formatTime(seconds) {
   const h = Math.floor(safe / 3600);
   const m = Math.floor((safe % 3600) / 60);
   const s = safe % 60;
-  return [h, m, s].map((v, i) => i === 0 ? String(v).padStart(2, "0") : String(v).padStart(2, "0")).join(":");
+  return [h, m, s]
+    .map(value => String(value).padStart(2, "0"))
+    .join(":");
 }
 
 function elapsedActive() {
@@ -62,28 +82,37 @@ function elapsedActive() {
 
 function subjectTotal(id) {
   const day = getDay();
-  return (day.totals[id] || 0) + (state.active?.subjectId === id ? elapsedActive() : 0);
+  return (day.totals[id] || 0) +
+    (state.active?.subjectId === id ? elapsedActive() : 0);
 }
 
 function dayTotal() {
-  return SUBJECTS.reduce((sum, subject) => sum + subjectTotal(subject.id), 0);
+  return SUBJECTS.reduce(
+    (sum, subject) => sum + subjectTotal(subject[0]),
+    0
+  );
 }
 
 function subjectName(id) {
-  return SUBJECTS.find(subject => subject.id === id)?.name || id;
+  return SUBJECTS.find(subject => subject[0] === id)?.[1] || id;
 }
 
 function commitActive() {
   if (!state.active) return;
+
   const duration = elapsedActive();
   const day = getDay();
-  day.totals[state.active.subjectId] = (day.totals[state.active.subjectId] || 0) + duration;
+
+  day.totals[state.active.subjectId] =
+    (day.totals[state.active.subjectId] || 0) + duration;
+
   day.sessions.push({
     subjectId: state.active.subjectId,
     start: state.active.startedAt,
     end: Date.now(),
     duration
   });
+
   state.active = null;
   saveState();
 }
@@ -93,33 +122,50 @@ function startSubject(id) {
     commitActive();
   } else {
     if (state.active) commitActive();
-    state.active = { subjectId: id, startedAt: Date.now() };
+    state.active = {
+      subjectId: id,
+      startedAt: Date.now()
+    };
     saveState();
   }
+
   render();
 }
 
 function render() {
-  document.getElementById("todayTotal").textContent = formatTime(dayTotal());
+  document.getElementById("todayTotal").textContent =
+    formatTime(dayTotal());
+
   const activeStatus = document.getElementById("activeStatus");
+  const list = document.getElementById("subjectList");
+
+  if (!SUBJECTS.length) {
+    activeStatus.textContent = "Select your course and group on Home first.";
+    list.innerHTML =
+      '<div class="empty-state">No subjects selected yet. Go to Home and choose your course and group.</div>';
+    return;
+  }
 
   if (state.active) {
-    activeStatus.textContent = "Tracking: " + subjectName(state.active.subjectId);
+    activeStatus.textContent =
+      "Tracking: " + subjectName(state.active.subjectId);
   } else {
     activeStatus.textContent = "Choose a subject to begin.";
   }
 
-  const list = document.getElementById("subjectList");
   list.innerHTML = SUBJECTS.map(subject => {
-    const active = state.active?.subjectId === subject.id;
+    const id = subject[0];
+    const name = subject[1];
+    const active = state.active?.subjectId === id;
+
     return `
-      <button class="subject-row ${active ? "active" : ""}" type="button" data-subject="${subject.id}">
+      <button class="subject-row ${active ? "active" : ""}" type="button" data-subject="${id}">
         <span class="subject-play">${active ? "Ⅱ" : "▶"}</span>
         <span>
-          <span class="subject-name">${subject.name}</span>
+          <span class="subject-name">${name}</span>
           <span class="subject-meta">${active ? "Currently tracking" : "Tap to start / pause"}</span>
         </span>
-        <span class="subject-time">${formatTime(subjectTotal(subject.id))}</span>
+        <span class="subject-time">${formatTime(subjectTotal(id))}</span>
       </button>
     `;
   }).join("");
@@ -130,9 +176,5 @@ function render() {
 }
 
 render();
-
-setInterval(() => {
-  render();
-}, 1000);
-
+setInterval(render, 1000);
 window.addEventListener("beforeunload", saveState);
