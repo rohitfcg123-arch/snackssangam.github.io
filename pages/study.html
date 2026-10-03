@@ -33,7 +33,22 @@
     </section>
   </main>
 
-  <script src="../js/academic.js?v=20261004"></script>
-  <script src="../js/study.js?v=20261004"></script>
+  <div class="custom-modal hidden" id="customSubjectModal" role="dialog" aria-modal="true" aria-labelledby="customSubjectTitle">
+    <div class="custom-modal-card">
+      <button class="custom-modal-close" id="closeCustomSubject" type="button" aria-label="Close">×</button>
+      <p class="eyebrow">CUSTOM TRACKER</p>
+      <h2 id="customSubjectTitle">Add a custom subject</h2>
+      <p>Use this for revision, mock tests, reading, or any extra activity you want to track separately.</p>
+      <label for="customSubjectName">Name</label>
+      <input id="customSubjectName" type="text" maxlength="80" placeholder="e.g. SFM Revision">
+      <div class="custom-modal-actions">
+        <button class="secondary-btn" id="cancelCustomSubject" type="button">Cancel</button>
+        <button class="primary-btn" id="saveCustomSubject" type="button">Add subject</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="../js/academic.js?v=20261004b"></script>
+  <script type="module" src="../js/study.js?v=20261004b"></script>
 </body>
 </html>
