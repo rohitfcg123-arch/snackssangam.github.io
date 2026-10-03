@@ -14,7 +14,7 @@
 .auth-panel label{font-weight:700}
 .auth-panel input{width:100%;min-height:46px;margin-top:6px;padding:0 12px;border:1px solid var(--color-border);border-radius:10px;box-sizing:border-box}
 .auth-actions{display:grid;gap:10px}
-.auth-secondary{text-align:center}
+.auth-secondary{text-align:center}.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:#667085;font-size:13px}.auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--color-border);flex:1}.google-button{width:100%;min-height:46px;border:1px solid var(--color-border);border-radius:10px;background:#fff;color:#14213D;font-weight:700;cursor:pointer}
 .auth-message{min-height:22px;margin:4px 0 0;font-size:14px;font-weight:700}
 .auth-message.error{color:#b42318}
 .auth-message.success{color:#16794b}
@@ -38,10 +38,11 @@
 <label>Password<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required></label>
 <div class="auth-actions">
 <button class="primary-button" type="submit">Login</button>
+<button class="google-button" id="googleLogin" type="button">Continue with Google</button>
 <button class="text-button" id="forgotPassword" type="button">Forgot password?</button>
 </div>
 </form>
-<p class="auth-secondary">New to CMA Zone? <button class="text-button" id="showRegister" type="button">Create account</button></p>
+<div class="auth-divider"><span>OR</span></div><p class="auth-secondary">New to CMA Zone? <button class="text-button" id="showRegister" type="button">Register / Create account</button></p>
 </section>
 
 <section class="welcome-card auth-panel hidden" id="registerPanel">
@@ -60,6 +61,6 @@
 <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
 </main>
 
-<script type="module" src="../js/auth.js"></script>
+<script type="module" src="../js/auth.js?v=20261004g"></script>
 </body>
 </html>
