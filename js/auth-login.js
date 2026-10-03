@@ -39,9 +39,12 @@ function firebaseMessage(error) {
     "auth/wrong-password": "Incorrect password.",
     "auth/email-already-in-use": "An account already exists with this email.",
     "auth/weak-password": "Password should be at least 6 characters.",
-    "auth/too-many-requests": "Too many attempts. Please try again later."
+    "auth/too-many-requests": "Too many attempts. Please try again later.",
+    "auth/unauthorized-domain": "This website domain is not authorized in Firebase Authentication. Add rohitfcg123-arch.github.io in Firebase Authentication → Settings → Authorized domains.",
+    "auth/operation-not-allowed": "Email/Password sign-in is not enabled in this Firebase project.",
+    "auth/network-request-failed": "Network request failed. Check your internet connection."
   };
-  return map[error.code] || "Authentication failed. Please try again.";
+  return map[error.code] || ("Firebase error: " + (error.code || "unknown") + " — " + (error.message || "Please try again."));
 }
 
 function setMode(mode) {
