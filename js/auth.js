@@ -13,7 +13,9 @@ import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
-  onAuthStateChanged
+  onAuthStateChanged,
+  GoogleAuthProvider,
+  signInWithRedirect
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const loginForm = document.getElementById("loginForm");
@@ -49,6 +51,16 @@ function setMode(mode) {
 }
 
 document.getElementById("showRegister")?.addEventListener("click", () => setMode("register"));
+
+document.getElementById("googleLogin")?.addEventListener("click", async () => {
+  showMessage("Opening Google sign-in…");
+  try {
+    const provider = new GoogleAuthProvider();
+    await signInWithRedirect(auth, provider);
+  } catch (error) {
+    showMessage(firebaseMessage(error), "error");
+  }
+});
 document.getElementById("showLogin")?.addEventListener("click", () => setMode("login"));
 
 loginForm?.addEventListener("submit", async (event) => {
