@@ -28,6 +28,70 @@
 <div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div>
 <div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div>
 </section>
+
+<section class="panel report-preview">
+<div class="panel-heading">
+  <div><p class="eyebrow">REPORTS PREVIEW</p><h2>Study Statistics</h2></div>
+  <span class="sample-badge">SAMPLE</span>
+</div>
+<p class="report-note">A preview of the reports you will get from your actual study activity.</p>
+
+<div class="report-tabs">
+  <span class="report-tab active">Period</span>
+  <span class="report-tab">Day</span>
+  <span class="report-tab">Week</span>
+  <span class="report-tab">Month</span>
+  <span class="report-tab">Trend</span>
+</div>
+
+<div class="report-grid">
+  <article class="report-card report-wide">
+    <div class="report-card-head"><div><strong>Total Study Time</strong><span>Last 7 days</span></div><b>27h 30m</b></div>
+    <div class="mini-bars">
+      <div class="mini-bar"><span style="height:52%"></span><small>Mon</small></div>
+      <div class="mini-bar"><span style="height:74%"></span><small>Tue</small></div>
+      <div class="mini-bar"><span style="height:43%"></span><small>Wed</small></div>
+      <div class="mini-bar"><span style="height:88%"></span><small>Thu</small></div>
+      <div class="mini-bar"><span style="height:65%"></span><small>Fri</small></div>
+      <div class="mini-bar"><span style="height:78%"></span><small>Sat</small></div>
+      <div class="mini-bar"><span style="height:35%"></span><small>Sun</small></div>
+    </div>
+  </article>
+
+  <article class="report-card">
+    <div class="report-card-head"><div><strong>Subject Ratio</strong><span>Study time</span></div></div>
+    <div class="ratio-list">
+      <div><span><i class="ratio-dot blue"></i>SFM</span><b>34%</b></div>
+      <div><span><i class="ratio-dot green"></i>SCM</span><b>28%</b></div>
+      <div><span><i class="ratio-dot purple"></i>CEL</span><b>22%</b></div>
+      <div><span><i class="ratio-dot orange"></i>DIT</span><b>16%</b></div>
+    </div>
+  </article>
+
+  <article class="report-card">
+    <div class="report-card-head"><div><strong>Daily Average</strong><span>Study time</span></div><b>3h 55m</b></div>
+    <div class="metric-track"><span style="width:72%"></span></div>
+    <p class="metric-caption">6 study days in the selected period</p>
+  </article>
+
+  <article class="report-card report-wide">
+    <div class="report-card-head"><div><strong>Study Start / End Regularity</strong><span>Consistency pattern</span></div><b>86%</b></div>
+    <div class="regularity-row">
+      <div><span>Start time</span><strong>10:15 AM</strong><em>Average</em></div>
+      <div><span>End time</span><strong>6:40 PM</strong><em>Average</em></div>
+      <div><span>Study days</span><strong>6 / 7</strong><em>This week</em></div>
+    </div>
+  </article>
+
+  <article class="report-card report-wide">
+    <div class="report-card-head"><div><strong>Daily / Weekly / Monthly Trend</strong><span>Progress over time</span></div></div>
+    <div class="trend-chart">
+      <span style="height:32%"></span><span style="height:46%"></span><span style="height:40%"></span><span style="height:62%"></span><span style="height:54%"></span><span style="height:76%"></span><span style="height:68%"></span><span style="height:84%"></span>
+    </div>
+    <div class="trend-labels"><small>Week 1</small><small>Week 2</small><small>Week 3</small><small>Week 4</small></div>
+  </article>
+</div>
+</section>
 </main>
 <script src="js/academic.js?v=20261004b"></script>
 <script src="js/home.js?v=20261004b"></script>
