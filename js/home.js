@@ -18,6 +18,17 @@ const startStudy = $("startStudy");
 const electiveWrap = $("electiveWrap");
 const electiveSelect = $("electiveSelect");
 
+function enforceStartStudyPlacement() {
+  if (!startStudy || !subjects) return;
+  const heroActions = document.querySelector(".hero-actions");
+  if (heroActions && heroActions.contains(startStudy)) {
+    heroActions.removeChild(startStudy);
+  }
+  if (startStudy.parentElement !== subjects.parentElement) {
+    subjects.parentElement.appendChild(startStudy);
+  }
+}
+
 /* December 2026 ICMAI examination dates. */
 const EXAM_DATES = {
   foundation: "2026-12-13",
