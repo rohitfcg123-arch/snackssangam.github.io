@@ -1,10 +1,10 @@
 /*
 FILE: js/study.js
-REFERENCE: CMA-ZONE-STUDY-FIRESTORE-V1
-PURPOSE: Subject-first study timer with Firebase Cloud Firestore persistence.
-EDITABLE AREAS: Firestore collection path and tracker behaviour.
+REFERENCE: CMA-ZONE-STUDY-FIRESTORE-V2
+PURPOSE: Subject-first study timer with Firestore persistence plus student-managed custom subjects.
+EDITABLE AREAS: Firestore paths, subject rendering and custom-subject behaviour.
 DEPENDENCIES: pages/study.html, css/study.css, js/academic.js, js/firebase.js.
-IMPORTANT NOTES: Study data is stored under users/{UID}/studyDays/{YYYY-MM-DD}. LocalStorage is not used for study records.
+IMPORTANT NOTES: Study records use users/{UID}/studyDays/{YYYY-MM-DD}. Custom subjects use users/{UID}/studyDays/__config__ so no new Firestore rule is required.
 LAST UPDATED: 2026-10-04
 */
 
@@ -17,12 +17,14 @@ import {
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const HOME_KEY = "cma_zone_home_v1";
+const CONFIG_DOC_ID = "__config__";
 const params = new URLSearchParams(window.location.search);
 const queryElective = params.get("elective") || "";
 
 let currentUser = null;
 let state = { days: {}, active: null };
 let SUBJECTS = [];
+let customSubjects = [];
 let saving = false;
 
 function todayKey() {
@@ -32,6 +34,50 @@ function todayKey() {
 function studyDocRef(dateKey = todayKey()) {
   if (!currentUser) return null;
   return doc(db, "users", currentUser.uid, "studyDays", dateKey);
+}
+
+function configDocRef() {
+  if (!currentUser) return null;
+  return doc(db, "users", currentUser.uid, "studyDays", CONFIG_DOC_ID);
+}
+
+async function loadCustomSubjects() {
+  if (!currentUser) return [];
+
+  try {
+    const snap = await getDoc(configDocRef());
+    if (!snap.exists()) return [];
+
+    const items = Array.isArray(snap.data().customSubjects)
+      ? snap.data().customSubjects
+      : [];
+
+    return items
+      .filter(item => Array.isArray(item) && item.length >= 2 && item[0] && item[1])
+      .map(item => [String(item[0]), String(item[1]), "custom"]);
+  } catch (error) {
+    console.error("Firestore custom subject read failed:", error);
+    showFirestoreError(error);
+    return [];
+  }
+}
+
+async function saveCustomSubjects() {
+  if (!currentUser) return;
+
+  try {
+    await setDoc(
+      configDocRef(),
+      {
+        customSubjects,
+        updatedAt: Date.now()
+      },
+      { merge: true }
+    );
+  } catch (error) {
+    console.error("Firestore custom subject write failed:", error);
+    showFirestoreError(error);
+  }
 }
 
 async function loadFirestoreState() {
@@ -85,9 +131,13 @@ async function saveTodayToFirestore() {
 }
 
 function showFirestoreError(error) {
+  const status = document.getElementById("activeStatus");
+  if (!status) return;
+
   if (error?.code === "permission-denied") {
-    const status = document.getElementById("activeStatus");
-    if (status) status.textContent = "Firestore permission denied. Check Firebase Firestore Rules.";
+    status.textContent = "Firestore permission denied. Check Firebase Firestore Rules.";
+  } else if (error?.code === "failed-precondition") {
+    status.textContent = "Firestore is not ready. Check the Firebase project.";
   }
 }
 
@@ -97,10 +147,16 @@ function loadHomeSelection() {
 
   if (queryLevel && queryGroup && ACADEMIC[queryLevel]) {
     const groups = ACADEMIC[queryLevel].groups;
-    const validGroup = queryGroup === "both" ? queryLevel !== "foundation" : !!groups[queryGroup];
+    const validGroup = queryGroup === "both"
+      ? queryLevel !== "foundation"
+      : !!groups[queryGroup];
 
     if (validGroup) {
-      const selection = { level: queryLevel, group: queryGroup, elective: queryElective };
+      const selection = {
+        level: queryLevel,
+        group: queryGroup,
+        elective: queryElective
+      };
       localStorage.setItem(HOME_KEY, JSON.stringify(selection));
       return selection;
     }
@@ -135,6 +191,10 @@ function getSelectedSubjects() {
   return selected;
 }
 
+function refreshSubjects() {
+  SUBJECTS = [...getSelectedSubjects(), ...customSubjects];
+}
+
 function getDay() {
   const key = todayKey();
   if (!state.days[key]) state.days[key] = { totals: {}, sessions: [] };
@@ -157,7 +217,8 @@ function elapsedActive() {
 
 function subjectTotal(id) {
   const day = getDay();
-  return (day.totals[id] || 0) + (state.active?.subjectId === id ? elapsedActive() : 0);
+  return (day.totals[id] || 0) +
+    (state.active?.subjectId === id ? elapsedActive() : 0);
 }
 
 function dayTotal() {
@@ -207,6 +268,54 @@ async function startSubject(id) {
   render();
 }
 
+function openCustomSubjectEditor() {
+  const modal = document.getElementById("customSubjectModal");
+  const input = document.getElementById("customSubjectName");
+  if (!modal || !input) return;
+
+  input.value = "";
+  modal.classList.remove("hidden");
+  setTimeout(() => input.focus(), 50);
+}
+
+function closeCustomSubjectEditor() {
+  document.getElementById("customSubjectModal")?.classList.add("hidden");
+}
+
+async function addCustomSubject() {
+  const input = document.getElementById("customSubjectName");
+  const name = input?.value.trim();
+
+  if (!name) {
+    input?.focus();
+    return;
+  }
+
+  if (!currentUser) return;
+
+  const duplicate = customSubjects.some(
+    subject => subject[1].toLowerCase() === name.toLowerCase()
+  );
+
+  if (duplicate) {
+    input.value = "";
+    input.placeholder = "Already added — enter another name";
+    input.focus();
+    return;
+  }
+
+  customSubjects.push([
+    "custom_" + Date.now(),
+    name,
+    "custom"
+  ]);
+
+  await saveCustomSubjects();
+  refreshSubjects();
+  closeCustomSubjectEditor();
+  render();
+}
+
 function render() {
   const total = document.getElementById("todayTotal");
   const activeStatus = document.getElementById("activeStatus");
@@ -218,13 +327,27 @@ function render() {
 
   if (!currentUser) {
     activeStatus.textContent = "Login first to track your study.";
-    list.innerHTML = '<div class="empty-state">Please login to start your personal study tracker.</div>';
+    list.innerHTML =
+      '<div class="empty-state">Please login to start your personal study tracker.</div>';
     return;
   }
 
   if (!SUBJECTS.length) {
-    activeStatus.textContent = "Select your course and group on Home first.";
-    list.innerHTML = '<div class="empty-state">No subjects selected yet. Go to Home and choose your course and group.</div>';
+    activeStatus.textContent = "Add a custom subject or choose your course and group.";
+    list.innerHTML =
+      '<div class="study-setup">' +
+        '<strong>No subjects selected yet</strong>' +
+        '<span>Choose your course and group on Home, or add a custom tracker below for revision, mock tests, reading, etc.</span>' +
+        '<a href="../index.html">Choose course / group</a>' +
+      '</div>' +
+      '<button class="custom-add-row" id="addCustomSubject" type="button">' +
+        '<span class="custom-add-icon">＋</span>' +
+        '<span><strong>Add custom subject</strong><small>Revision, mock test, reading or anything else</small></span>' +
+      '</button>';
+
+    document.getElementById("addCustomSubject")
+      ?.addEventListener("click", openCustomSubjectEditor);
+
     return;
   }
 
@@ -235,6 +358,7 @@ function render() {
   list.innerHTML = SUBJECTS.map(subject => {
     const id = subject[0];
     const name = subject[1];
+    const isCustom = subject[2] === "custom";
     const active = state.active?.subjectId === id;
 
     return `
@@ -242,16 +366,41 @@ function render() {
         <span class="subject-play">${active ? "Ⅱ" : "▶"}</span>
         <span>
           <span class="subject-name">${name}</span>
-          <span class="subject-meta">${active ? "Currently tracking" : "Tap to start / pause"}</span>
+          <span class="subject-meta">${isCustom ? "Custom tracker" : (active ? "Currently tracking" : "Tap to start / pause")}</span>
         </span>
         <span class="subject-time">${formatTime(subjectTotal(id))}</span>
       </button>`;
-  }).join("");
+  }).join("") +
+  `
+    <button class="custom-add-row" id="addCustomSubject" type="button">
+      <span class="custom-add-icon">＋</span>
+      <span><strong>Add custom subject</strong><small>Add revision, mock test, reading or any extra study activity</small></span>
+    </button>`;
 
   list.querySelectorAll("[data-subject]").forEach(button => {
     button.addEventListener("click", () => startSubject(button.dataset.subject));
   });
+
+  document.getElementById("addCustomSubject")
+    ?.addEventListener("click", openCustomSubjectEditor);
 }
+
+const customAddButton = document.getElementById("saveCustomSubject");
+const customCancelButton = document.getElementById("cancelCustomSubject");
+const customCloseButton = document.getElementById("closeCustomSubject");
+
+customAddButton?.addEventListener("click", addCustomSubject);
+customCancelButton?.addEventListener("click", closeCustomSubjectEditor);
+customCloseButton?.addEventListener("click", closeCustomSubjectEditor);
+
+document.getElementById("customSubjectModal")?.addEventListener("click", event => {
+  if (event.target.id === "customSubjectModal") closeCustomSubjectEditor();
+});
+
+document.getElementById("customSubjectName")?.addEventListener("keydown", event => {
+  if (event.key === "Enter") addCustomSubject();
+  if (event.key === "Escape") closeCustomSubjectEditor();
+});
 
 onAuthStateChanged(auth, async user => {
   currentUser = user;
@@ -259,17 +408,20 @@ onAuthStateChanged(auth, async user => {
   if (!currentUser) {
     state = { days: {}, active: null };
     SUBJECTS = [];
+    customSubjects = [];
     render();
     return;
   }
 
   state = await loadFirestoreState();
-  SUBJECTS = getSelectedSubjects();
+  customSubjects = await loadCustomSubjects();
+  refreshSubjects();
   render();
 });
 
 render();
 setInterval(render, 1000);
+
 window.addEventListener("beforeunload", () => {
   if (currentUser) saveTodayToFirestore();
 });
