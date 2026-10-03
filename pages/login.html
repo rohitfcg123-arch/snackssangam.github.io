@@ -8,17 +8,44 @@
 <link rel="stylesheet" href="../css/variables.css">
 <link rel="stylesheet" href="../css/base.css">
 <style>
-.auth-panel{padding:24px}
-.auth-panel h1{font-size:32px;margin-bottom:8px}
-.auth-panel form{display:grid;gap:14px}
-.auth-panel label{font-weight:700}
-.auth-panel input{width:100%;min-height:46px;margin-top:6px;padding:0 12px;border:1px solid var(--color-border);border-radius:10px;box-sizing:border-box}
+/*
+FILE: pages/login.html
+REFERENCE: FIREBASE-AUTH-V1
+PURPOSE: CMA Zone authentication screen.
+EDITABLE AREAS: Authentication copy and spacing.
+DEPENDENCIES: ../css/variables.css, ../css/base.css, ../js/auth.js.
+IMPORTANT NOTES: Keep authentication controls consistent with the CMA Zone design system.
+LAST UPDATED: 2026-10-04
+*/
+.auth-page{width:min(calc(100% - 32px),480px);margin:0 auto;padding:48px 0 64px}
+.auth-panel{padding:32px;border:1px solid #e4e7ec;border-radius:18px;background:#fff;box-shadow:0 10px 30px rgba(20,33,61,.07)}
+.auth-panel h1{margin:4px 0 10px;font-size:32px;line-height:1.15;color:#14213D}
+.auth-panel .welcome-text{margin:0 0 26px;line-height:1.55}
+.auth-panel form{display:grid;gap:16px}
+.auth-panel label{display:block;font-weight:700;color:#14213D}
+.auth-panel input{display:block;width:100%;height:50px;margin-top:7px;padding:0 14px;border:1px solid #d0d5dd;border-radius:10px;box-sizing:border-box;background:#fff;color:#14213D;font:inherit;outline:none}
+.auth-panel input:focus{border-color:#2f6fed;box-shadow:0 0 0 3px rgba(47,111,237,.12)}
 .auth-actions{display:grid;gap:10px}
-.auth-secondary{text-align:center}.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:#667085;font-size:13px}.auth-divider:before,.auth-divider:after{content:"";height:1px;background:var(--color-border);flex:1}.google-button{width:100%;min-height:46px;border:1px solid var(--color-border);border-radius:10px;background:#fff;color:#14213D;font-weight:700;cursor:pointer}
-.auth-message{min-height:22px;margin:4px 0 0;font-size:14px;font-weight:700}
+.auth-primary,.google-button{width:100%;height:50px;border-radius:10px;font:inherit;font-weight:700;cursor:pointer}
+.auth-primary{border:0;background:#2f6fed;color:#fff}
+.auth-primary:hover{background:#245dcc}
+.google-button{border:1px solid #d0d5dd;background:#fff;color:#14213D}
+.google-button:hover{background:#f8f9fb}
+.auth-link-button{border:0;background:transparent;color:#2f6fed;font:inherit;font-weight:700;cursor:pointer;padding:4px}
+.forgot-row{text-align:center;margin-top:2px}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:22px 0;color:#667085;font-size:13px}
+.auth-divider:before,.auth-divider:after{content:"";height:1px;background:#e4e7ec;flex:1}
+.auth-secondary{text-align:center;margin:20px 0 0;color:#667085}
+.auth-secondary .auth-link-button{margin-left:4px}
+.auth-message{min-height:22px;margin:14px 0 0;font-size:14px;font-weight:700;text-align:center}
 .auth-message.error{color:#b42318}
 .auth-message.success{color:#16794b}
 .hidden{display:none!important}
+@media (max-width:520px){
+  .auth-page{width:min(calc(100% - 24px),480px);padding:28px 0 48px}
+  .auth-panel{padding:24px 20px}
+  .auth-panel h1{font-size:30px}
+}
 </style>
 </head>
 <body>
@@ -27,7 +54,7 @@
 <div><strong>Login</strong><span class="brand-subtitle">CMA Zone</span></div>
 </header>
 
-<main style="width:min(100% - 24px,480px);margin:auto;padding:32px 0">
+<main class="auth-page">
 
 <section class="welcome-card auth-panel" id="loginPanel">
 <p class="eyebrow">CMA ZONE</p>
@@ -37,12 +64,12 @@
 <label>Email<input id="loginEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
 <label>Password<input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password" required></label>
 <div class="auth-actions">
-<button class="primary-button" type="submit">Login</button>
+<button class="auth-primary" type="submit">Login</button>
 <button class="google-button" id="googleLogin" type="button">Continue with Google</button>
-<button class="text-button" id="forgotPassword" type="button">Forgot password?</button>
+<div class="forgot-row"><button class="auth-link-button" id="forgotPassword" type="button">Forgot password?</button></div>
 </div>
 </form>
-<div class="auth-divider"><span>OR</span></div><p class="auth-secondary">New to CMA Zone? <button class="text-button" id="showRegister" type="button">Register / Create account</button></p>
+<div class="auth-divider"><span>OR</span></div><p class="auth-secondary">New to CMA Zone? <button class="auth-link-button" id="showRegister" type="button">Register / Create account</button></p>
 </section>
 
 <section class="welcome-card auth-panel hidden" id="registerPanel">
@@ -53,9 +80,9 @@
 <label>Email<input id="registerEmail" type="email" autocomplete="email" placeholder="you@example.com" required></label>
 <label>Password<input id="registerPassword" type="password" autocomplete="new-password" placeholder="At least 6 characters" minlength="6" required></label>
 <label>Confirm password<input id="registerConfirm" type="password" autocomplete="new-password" placeholder="Re-enter password" minlength="6" required></label>
-<button class="primary-button" type="submit">Create account</button>
+<button class="auth-primary" type="submit">Create account</button>
 </form>
-<p class="auth-secondary">Already have an account? <button class="text-button" id="showLogin" type="button">Login</button></p>
+<p class="auth-secondary">Already have an account? <button class="auth-link-button" id="showLogin" type="button">Login</button></p>
 </section>
 
 <p id="authMessage" class="auth-message" role="status" aria-live="polite"></p>
