@@ -1,0 +1,37 @@
+/*
+FILE: css/study.css
+REFERENCE: CMA-ZONE-STUDY-V1
+PURPOSE: Presentation for the simple subject-first study tracker.
+EDITABLE AREAS: Study screen spacing, subject rows and active states.
+DEPENDENCIES: css/variables.css, css/base.css
+IMPORTANT NOTES: Timer behaviour belongs in js/study.js; do not place tracking logic in CSS.
+LAST UPDATED: 2026-10-04
+*/
+
+.study-header{gap:var(--space-3)}
+.back-link{color:var(--color-white);text-decoration:none;font-size:30px;line-height:1}
+.study-page{width:min(100% - 24px,760px);margin:0 auto;padding:20px 0 40px}
+.study-summary{padding:24px 20px;margin-bottom:18px;border-radius:var(--radius-lg);background:var(--color-navy);color:var(--color-white);text-align:center}
+.study-summary .eyebrow{color:#9fc0ff}
+.summary-time{font-size:clamp(42px,11vw,64px);font-variant-numeric:tabular-nums;line-height:1.05;font-weight:500;letter-spacing:-.03em}
+.summary-label{margin:7px 0 14px;color:rgba(255,255,255,.72);font-size:14px}
+.active-status{display:inline-flex;min-height:34px;align-items:center;padding:6px 12px;border-radius:999px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.88);font-size:13px}
+.subject-list{background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-card)}
+.subject-list h1{margin:0;font-size:24px;letter-spacing:-.02em}
+.section-note{margin:6px 0 16px;color:var(--color-muted);font-size:14px}
+.subject-row{width:100%;display:grid;grid-template-columns:48px 1fr auto;gap:12px;align-items:center;padding:15px 4px;border:0;border-bottom:1px solid var(--color-border);background:transparent;color:var(--color-text);text-align:left;cursor:pointer}
+.subject-row:last-child{border-bottom:0}
+.subject-row:hover{background:#f8faff}
+.subject-play{width:42px;height:42px;display:grid;place-items:center;border-radius:50%;background:var(--color-blue);color:#fff;font-size:18px}
+.subject-row.active .subject-play{background:var(--color-green)}
+.subject-name{font-size:16px;font-weight:650}
+.subject-meta{margin-top:2px;color:var(--color-muted);font-size:12px}
+.subject-time{font-size:15px;font-variant-numeric:tabular-nums;white-space:nowrap}
+@media(max-width:560px){
+  .study-page{padding-top:12px}
+  .study-summary{padding:22px 14px}
+  .subject-list{padding:16px}
+  .subject-row{grid-template-columns:44px 1fr auto;gap:10px;padding:14px 2px}
+  .subject-name{font-size:15px}
+  .subject-time{font-size:14px}
+}
