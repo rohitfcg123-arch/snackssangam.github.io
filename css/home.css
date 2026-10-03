@@ -130,3 +130,36 @@ LAST UPDATED: 2026-10-04
   .week-bars{height:165px}
   .month-day-chart,.stats-bar-chart,.trend-bars{height:145px}
 }
+
+
+/* STATISTICS UI PATCH V2 */
+.stats-navigation button,
+.calendar-days button,
+.day-grid button,
+.week-bar-item,
+.consistency-row button,
+.month-grid > button,
+.month-day-bar,
+.stats-day-bar,
+.trend-bars button,
+.trend-filters button {
+  -webkit-appearance:none;
+  appearance:none;
+  box-sizing:border-box;
+  font-family:inherit;
+}
+.calendar-days button,
+.day-grid button,
+.consistency-row button,
+.month-grid > button {
+  border:1px solid var(--color-border);
+  background:#fff;
+}
+.calendar-days button.study{border-color:#cfe0ff}
+.day-grid > button{background:#fff;border:1px solid var(--color-border)}
+.day-grid > button.selected{border-color:var(--color-blue)}
+.month-grid > button.active{border-color:#f1d0b7}
+.month-grid > button.selected{border:2px solid var(--color-blue)}
+.stats-bar-chart,
+.month-day-chart,
+.trend-bars{width:100%;box-sizing:border-box}
