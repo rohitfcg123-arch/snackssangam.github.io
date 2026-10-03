@@ -11,7 +11,7 @@
 <a class="login-button" href="pages/login.html">Login</a>
 </header>
 <main class="home-page">
-<section class="hero-card"><div><p class="eyebrow">MY CMA ZONE</p><h1>Prepare smarter. Track everything.</h1><p class="hero-text">Choose your course and group. CMA Zone will show only the subjects you need.</p></div><div class="hero-actions"><a class="primary-button primary-link" id="startStudy" href="pages/study.html">Start Study</a><button class="secondary-button" id="saveProfile" type="button">Save Selection</button></div></section>
+<section class="hero-card"><div><p class="eyebrow">MY CMA ZONE</p><h1>Prepare smarter. Track everything.</h1><p class="hero-text">Choose your course and group. CMA Zone will show only the subjects you need.</p></div><div class="hero-actions"><button class="secondary-button" id="saveProfile" type="button">Save Selection</button></div></section>
 <section class="dashboard-grid">
 <article class="panel"><div class="panel-heading"><div><p class="eyebrow">ACADEMIC SETUP</p><h2>Choose your course</h2></div></div>
 <div class="field-grid"><label>Level<select id="levelSelect"><option value="">Select level</option><option value="foundation">Foundation</option><option value="inter">Intermediate</option><option value="final">Final</option></select></label>
@@ -22,7 +22,7 @@
 <div class="countdown-number" id="attemptCountdown">—</div><div class="countdown-label" id="attemptDateLabel">Select your course and group</div>
 <div class="countdown-edit hidden" id="attemptEditor"><label>Attempt name<input id="attemptName" placeholder="e.g. December 2026 Attempt"></label><label>Exam date<input id="attemptDate" type="date"></label><button class="primary-button" id="saveAttempt" type="button">Save Attempt</button></div></article>
 </section>
-<section class="panel"><div class="panel-heading"><div><p class="eyebrow">YOUR SUBJECTS</p><h2>Subjects for selected group</h2></div></div><div id="subjectList" class="subject-grid"><div class="empty-state">Select your level and group to see subjects.</div></div></section>
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">YOUR SUBJECTS</p><h2>Subjects for selected group</h2></div></div><div id="subjectList" class="subject-grid"><div class="empty-state">Select your level and group to see subjects.</div></div><a class="primary-button primary-link start-study-button" id="startStudy" href="pages/study.html">Start Study</a></section>
 <section class="panel">
 <div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div>
 <div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div>
