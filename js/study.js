@@ -1,6 +1,6 @@
 /*
 FILE: js/study.js
-REFERENCE: CMA-ZONE-STUDY-FIRESTORE-V2
+REFERENCE: CMA-ZONE-STUDY-FIRESTORE-V3
 PURPOSE: Subject-first study timer with Firestore persistence plus student-managed custom subjects.
 EDITABLE AREAS: Firestore paths, subject rendering and custom-subject behaviour.
 DEPENDENCIES: pages/study.html, css/study.css, js/academic.js, js/firebase.js.
@@ -28,7 +28,11 @@ let customSubjects = [];
 let saving = false;
 
 function todayKey() {
-  return new Date().toISOString().slice(0, 10);
+  const now = new Date();
+  const y = now.getFullYear();
+  const m = String(now.getMonth() + 1).padStart(2, "0");
+  const d = String(now.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function studyDocRef(dateKey = todayKey()) {
