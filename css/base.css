@@ -27,4 +27,4 @@ h1{max-width:620px;margin:0;font-size:clamp(32px,7vw,52px);line-height:1.08;lett
 .status-card p{margin:3px 0 0;color:var(--color-muted);font-size:14px}
 .status-dot{width:10px;height:10px;flex:0 0 10px;margin-top:7px;border-radius:50%;background:var(--color-green)}
 @media(max-width:560px){.app-header{min-height:64px;padding:0 var(--space-4)}.foundation-page{width:min(100% - 24px,760px);padding:24px 0}.welcome-card{padding:24px 20px}.primary-button{width:100%}}
-.primary-link{display:flex;align-items:center;justify-content:center;text-decoration:none}
+.primary-link,.primary-link:link,.primary-link:visited,.primary-link:hover,.primary-link:active,.primary-link:focus{display:flex;align-items:center;justify-content:center;text-decoration:none!important;text-decoration-line:none!important;text-decoration-thickness:0!important;text-underline-offset:0!important;color:var(--color-white)!important}
