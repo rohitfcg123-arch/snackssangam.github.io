@@ -8,6 +8,9 @@ IMPORTANT NOTES: Subjects come only from js/academic.js. Exam countdown uses the
 LAST UPDATED: 2026-10-04
 */
 
+import { auth } from "./firebase.js";
+import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+
 const STORE = "cma_zone_home_v1";
 const state = JSON.parse(localStorage.getItem(STORE) || "{}");
 const $ = id => document.getElementById(id);
@@ -17,6 +20,43 @@ const subjects = $("subjectList");
 const startStudy = $("startStudy");
 const electiveWrap = $("electiveWrap");
 const electiveSelect = $("electiveSelect");
+const greetingCard = $("greetingCard");
+const greetingTitle = $("greetingTitle");
+const greetingQuote = $("greetingQuote");
+const logoutButton = $("logoutButton");
+
+const MOTIVATIONAL_QUOTES = [
+  "Small progress every day becomes a big result.",
+  "Your consistency today builds your confidence tomorrow.",
+  "One focused session at a time. You’ve got this.",
+  "Don’t wait for motivation. Build momentum.",
+  "Study with purpose. Revise with confidence. Perform with clarity."
+];
+
+function getGreetingName(user) {
+  const name = (user?.displayName || "").trim();
+  if (name) return name.split(/\s+/)[0];
+  const emailName = (user?.email || "Student").split("@")[0].replace(/[._-]+/g, " ").trim();
+  return emailName ? emailName.split(/\s+/)[0] : "Student";
+}
+
+function showStudentGreeting(user) {
+  if (!greetingCard) return;
+  if (!user) {
+    greetingCard.classList.add("hidden");
+    return;
+  }
+  const name = getGreetingName(user);
+  greetingTitle.textContent = "Hi " + name + " 👋";
+  greetingQuote.textContent = MOTIVATIONAL_QUOTES[Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length)];
+  greetingCard.classList.remove("hidden");
+}
+
+onAuthStateChanged(auth, showStudentGreeting);
+logoutButton?.addEventListener("click", async () => {
+  await signOut(auth);
+  window.location.reload();
+});
 
 function enforceStartStudyPlacement() {
   if (!startStudy || !subjects) return;
