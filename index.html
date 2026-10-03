@@ -1,44 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#14213D">
-  <title>CMA Zone</title>
-  <!-- CMA-ZONE-STUDY-V1 deployment trigger: 2026-10-04 -->
-  <link rel="stylesheet" href="css/variables.css">
-  <link rel="stylesheet" href="css/base.css">
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#14213D"><title>CMA Zone — Home</title>
+<link rel="stylesheet" href="css/variables.css"><link rel="stylesheet" href="css/base.css"><link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-  <header class="app-header">
-    <div class="brand">
-      <span class="brand-mark">C</span>
-      <div>
-        <strong>CMA Zone</strong>
-        <span class="brand-subtitle">CMA Preparation</span>
-      </div>
-    </div>
-  </header>
-
-  <main class="foundation-page">
-    <section class="welcome-card">
-      <p class="eyebrow">CMA ZONE</p>
-      <h1>Your CMA preparation, kept simple.</h1>
-      <p class="welcome-text">
-        Open Study, tap the subject you are studying, and let CMA Zone track your time automatically.
-      </p>
-      <a class="primary-button primary-link" href="pages/study.html">
-        Start Study
-      </a>
-    </section>
-
-    <section class="status-card" aria-live="polite">
-      <span class="status-dot"></span>
-      <div>
-        <strong>Study Tracker V1 ready</strong>
-        <p>Subject-first tracking is now available for testing.</p>
-      </div>
-    </section>
-  </main>
-</body>
-</html>
+<header class="app-header home-header">
+<div class="brand"><span class="brand-mark">C</span><div><strong>CMA Zone</strong><span class="brand-subtitle">CMA Preparation</span></div></div>
+<a class="login-button" href="pages/login.html">Login</a>
+</header>
+<main class="home-page">
+<section class="hero-card"><div><p class="eyebrow">MY CMA ZONE</p><h1>Prepare smarter. Track everything.</h1><p class="hero-text">Choose your course and group. CMA Zone will show only the subjects you need.</p></div><div class="hero-actions"><a class="primary-button primary-link" href="pages/study.html">Start Study</a><button class="secondary-button" id="saveProfile" type="button">Save Selection</button></div></section>
+<section class="dashboard-grid">
+<article class="panel"><div class="panel-heading"><div><p class="eyebrow">ACADEMIC SETUP</p><h2>Choose your course</h2></div></div>
+<div class="field-grid"><label>Level<select id="levelSelect"><option value="">Select level</option><option value="foundation">Foundation</option><option value="inter">Intermediate</option><option value="final">Final</option></select></label>
+<label>Group<select id="groupSelect" disabled><option value="">Select group</option></select></label></div>
+<div id="profileStatus" class="profile-status">Select your level and group.</div></article>
+<article class="panel"><div class="panel-heading"><div><p class="eyebrow">COUNTDOWN</p><h2>Attempt</h2></div><button class="text-button" id="editAttempt" type="button">Edit</button></div>
+<div class="countdown-number" id="attemptCountdown">—</div><div class="countdown-label" id="attemptDateLabel">Set your attempt date</div>
+<div class="countdown-edit hidden" id="attemptEditor"><label>Attempt name<input id="attemptName" value="December 2026 Attempt"></label><label>Exam date<input id="attemptDate" type="date" value="2026-12-10"></label><button class="primary-button" id="saveAttempt" type="button">Save Attempt</button></div></article>
+</section>
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">YOUR SUBJECTS</p><h2>Subjects for selected group</h2></div></div><div id="subjectList" class="subject-grid"><div class="empty-state">Select your level and group to see subjects.</div></div></section>
+<section class="dashboard-grid">
+<article class="panel"><div class="panel-heading"><div><p class="eyebrow">PRACTICE</p><h2>Practice now</h2></div></div><div class="practice-grid"><button class="practice-card" type="button"><strong>MCQ</strong><span>Quick practice tests</span></button><button class="practice-card" type="button"><strong>PYQ</strong><span>Previous year questions</span></button><button class="practice-card" type="button"><strong>Subjective</strong><span>Written-answer practice</span></button></div></article>
+<article class="panel"><div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div>
+<div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div>
+<div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div></article>
+</section>
+</main><script src="js/home.js"></script>
+</body></html>
