@@ -1,6 +1,6 @@
 /*
 FILE: js/stats.js
-REFERENCE: CMA-ZONE-STUDY-STATS-FIRESTORE-V1
+REFERENCE: CMA-ZONE-STUDY-STATS-FIRESTORE-V2
 PURPOSE: Render Study Statistics from the logged-in student's Cloud Firestore study records.
 EDITABLE AREAS: Statistics calculations and report presentation.
 DEPENDENCIES: js/firebase.js, js/academic.js, js/home.js.
@@ -62,6 +62,7 @@ async function loadStudyDays() {
     cachedDays = {};
 
     snapshot.forEach(item => {
+      if (item.id === "__config__") return;
       cachedDays[item.id] = item.data();
     });
   } catch (error) {
