@@ -11,10 +11,28 @@ LAST UPDATED: 2026-10-04
 const STORAGE_KEY = "cma_zone_study_v1";
 const HOME_KEY = "cma_zone_home_v1";
 
+const params = new URLSearchParams(window.location.search);
+
 const state = loadState();
 const SUBJECTS = getSelectedSubjects();
 
 function loadHomeSelection() {
+  const queryLevel = params.get("level");
+  const queryGroup = params.get("group");
+
+  if (queryLevel && queryGroup && ACADEMIC[queryLevel]) {
+    const groups = ACADEMIC[queryLevel].groups;
+    const validGroup = queryGroup === "both"
+      ? queryLevel !== "foundation"
+      : !!groups[queryGroup];
+
+    if (validGroup) {
+      const selection = { level: queryLevel, group: queryGroup };
+      localStorage.setItem(HOME_KEY, JSON.stringify(selection));
+      return selection;
+    }
+  }
+
   try {
     return JSON.parse(localStorage.getItem(HOME_KEY) || "{}");
   } catch {
