@@ -76,12 +76,8 @@ document.getElementById("googleLogin")?.addEventListener("click", async () => {
     provider.setCustomParameters({ prompt: "select_account" });
     const result = await signInWithPopup(auth, provider);
     if (!result?.user) throw new Error("Google sign-in did not return a Firebase user.");
-    await new Promise(resolve => {
-      const unsubscribe = onAuthStateChanged(auth, user => {
-        if (user) { unsubscribe(); resolve(user); }
-      });
-      setTimeout(() => { unsubscribe(); resolve(result.user); }, 3000);
-    });
+    if (typeof auth.authStateReady === "function") await auth.authStateReady();
+    if (!auth.currentUser) throw new Error("Firebase sign-in completed, but the session was not restored.");
     window.location.replace(new URL("../index.html", window.location.href).href);
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
