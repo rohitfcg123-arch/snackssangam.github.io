@@ -15,6 +15,8 @@ import {
   signInWithEmailAndPassword,
   sendPasswordResetEmail,
   onAuthStateChanged,
+  setPersistence,
+  browserLocalPersistence,
   GoogleAuthProvider,
   signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -45,6 +47,7 @@ function firebaseMessage(error) {
     "auth/network-request-failed": "Network request failed. Check your internet connection.",
     "auth/popup-blocked": "Google sign-in popup was blocked. Allow popups for this site and try again.",
     "auth/popup-closed-by-user": "Google sign-in was cancelled. Please try again.",
+    "auth/internal-error": "Firebase could not complete Google sign-in. Please try again.",
     "auth/account-exists-with-different-credential": "An account already exists with this email using another sign-in method."
   };
   return map[error.code] || ("Firebase error: " + (error.code || "unknown") + " — " + (error.message || "Please try again."));
@@ -68,11 +71,21 @@ document.getElementById("showRegister")?.addEventListener("click", () => setMode
 document.getElementById("googleLogin")?.addEventListener("click", async () => {
   showMessage("Opening Google sign-in…");
   try {
+    await setPersistence(auth, browserLocalPersistence);
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
     const result = await signInWithPopup(auth, provider);
-    if (result?.user) {
-      goHome();
-    }
+    if (!result?.user) throw new Error("Google sign-in completed but no Firebase user was returned.");
+    // Wait until Firebase has restored the authenticated session before navigating.
+    await new Promise((resolve, reject) => {
+      const unsubscribe = onAuthStateChanged(auth, user => {
+        unsubscribe();
+        if (user) resolve(user);
+        else reject(new Error("Firebase session was not restored."));
+      });
+      setTimeout(() => { unsubscribe(); reject(new Error("Firebase authentication session timed out.")); }, 8000);
+    });
+    goHome();
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
   }
@@ -88,7 +101,12 @@ loginForm?.addEventListener("submit", async (event) => {
   showMessage("Signing in…");
 
   try {
+    await setPersistence(auth, browserLocalPersistence);
     await signInWithEmailAndPassword(auth, email, password);
+    await new Promise(resolve => {
+      const unsubscribe = onAuthStateChanged(auth, user => { if (user) { unsubscribe(); resolve(); } });
+      setTimeout(() => { unsubscribe(); resolve(); }, 5000);
+    });
     goHome();
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
