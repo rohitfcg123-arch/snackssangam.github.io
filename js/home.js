@@ -69,9 +69,23 @@ function showStudentGreeting(user) {
 }
 
 onAuthStateChanged(auth, showStudentGreeting);
-async function performLogout() {
-  await signOut(auth);
-  window.location.reload();
+let logoutInProgress=false;
+async function performLogout(event) {
+  event?.preventDefault?.();
+  event?.stopPropagation?.();
+  if(logoutInProgress)return;
+  logoutInProgress=true;
+  const buttons=[logoutButton,headerLogout,$("menuLogout")].filter(Boolean);
+  buttons.forEach(b=>{b.disabled=true;b.setAttribute("aria-busy","true")});
+  try{
+    await signOut(auth);
+    window.location.replace("./pages/signin.html?loggedout=1");
+  }catch(e){
+    console.error("Home logout failed:",e);
+    logoutInProgress=false;
+    buttons.forEach(b=>{b.disabled=false;b.removeAttribute("aria-busy")});
+    alert("Logout failed: "+(e?.code||e?.message||"Unknown error"));
+  }
 }
 
 logoutButton?.addEventListener("click", performLogout);
@@ -265,4 +279,4 @@ function openMenu(){sideMenu?.classList.add("open");menuOverlay?.classList.remov
 function closeMenu(){sideMenu?.classList.remove("open");menuOverlay?.classList.add("hidden");sideMenu?.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open")}
 menuToggle?.addEventListener("click",openMenu);menuClose?.addEventListener("click",closeMenu);menuOverlay?.addEventListener("click",closeMenu);
 document.querySelectorAll("[data-menu]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();closeMenu();const key=a.dataset.menu;if(key==="settings")alert("Settings section is coming here. Course settings are available in Course.");else if(key==="students")alert("Student details will be available here.");else if(key==="revision")$("quickRevision")?.click();else if(key==="countdown")$("editAttempt")?.click();else alert("This section is ready for the next module.")}));
-$("menuLogout")?.addEventListener("click",e=>{e.preventDefault();performLogout()});
+$("menuLogout")?.addEventListener("click",performLogout);
