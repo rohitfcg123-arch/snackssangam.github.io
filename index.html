@@ -7,26 +7,33 @@
 </head>
 <body>
 <header class="app-header home-header">
+<button class="menu-toggle" id="menuToggle" type="button" aria-label="Open menu">☰</button>
 <div class="brand"><span class="brand-mark">C</span><div><strong>CMA Zone</strong><span class="brand-subtitle">CMA Preparation</span></div></div>
 <div class="header-auth"><a class="login-button" id="loginButton" href="pages/signin.html">Login</a><button class="logout-button hidden" id="headerLogout" type="button">Logout</button></div>
 </header>
-<main class="home-page">
+<div class="menu-overlay hidden" id="menuOverlay"></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-head"><div class="brand"><span class="brand-mark">C</span><div><strong>CMA Zone</strong><span class="brand-subtitle">CMA Preparation</span></div></div><button id="menuClose" type="button">×</button></div><nav class="side-menu-nav">
+<a href="#" data-menu="students">👥 <span>Students Details</span><b>›</b></a>
+<a href="pages/course.html">📚 <span>Course</span><b>›</b></a>
+<a href="pages/study.html">📖 <span>Subjects</span><b>›</b></a>
+<a href="pages/study-plan.html">▣ <span>Study Plan</span><b>›</b></a>
+<a href="#" data-menu="revision">⟳ <span>Revision</span><b>›</b></a>
+<a href="pages/pyqs.html">▧ <span>PYQs</span><b>›</b></a>
+<a href="pages/mock-tests.html">☑ <span>Mock Tests</span><b>›</b></a>
+<a href="pages/statistics.html">▥ <span>Statistics</span><b>›</b></a>
+<a href="#" data-menu="countdown">◷ <span>Exam Countdown</span><b>›</b></a>
+<a href="#" data-menu="notes">▤ <span>Notes</span><b>›</b></a>
+<a href="#" data-menu="bookmarks">🔖 <span>Bookmarks</span><b>›</b></a>
+<a href="#" data-menu="settings">⚙ <span>Settings</span><b>›</b></a>
+<a href="#" data-menu="help">? <span>Help & Support</span><b>›</b></a>
+<a href="#" id="menuLogout" class="menu-logout">↪ <span>Logout</span></a>
+</nav></aside><main class="home-page">
 <section class="greeting-card hidden" id="greetingCard" aria-live="polite"><div><p class="greeting-title" id="greetingTitle">Hi 👋</p><p class="greeting-quote" id="greetingQuote"></p></div><button class="text-button greeting-logout" id="logoutButton" type="button">Logout</button></section>
-<section class="study-launch-panel panel"><div class="study-launch-top"><div><p class="eyebrow">STUDY TRACKER</p><h2>Ready to study?</h2><p class="study-launch-note">Choose what you are studying and start your timer without leaving the Home page.</p></div></div><button class="start-study-home" id="startStudy" type="button"><span class="start-study-icon">▶</span><span><strong>Start Study</strong><small>Select a subject to begin</small></span><span class="start-study-chevron">⌄</span></button><div id="homeActiveStudy" class="home-active-study hidden"><div class="active-study-head"><span class="live-pill"><i></i> Studying Now</span><button id="activeStudyClose" type="button" aria-label="Collapse timer">⌃</button></div><div class="active-study-subject" id="activeStudySubject">—</div><div class="active-study-timer" id="activeStudyTimer">00:00:00</div><div class="active-study-meta"><span id="activeStudyStarted">Started just now</span><span id="activeStudyToday">Today</span></div><div class="active-study-actions"><button class="pause-study" id="pauseStudy" type="button">Ⅱ Pause</button><button class="stop-study" id="stopStudy" type="button">■ Complete</button></div></div></section><section class="hero-card"><div><p class="eyebrow">MY CMA ZONE</p><h1>Prepare smarter. Track everything.</h1><p class="hero-text">Choose your course and group. CMA Zone will show only the subjects you need.</p></div><div class="hero-actions"><a class="secondary-button primary-link statistics-home-button" href="pages/statistics.html">Statistics</a></div></section>
+<section class="study-launch-panel panel"><div class="study-launch-top"><div><p class="eyebrow">STUDY TRACKER</p><h2>Ready to study?</h2><p class="study-launch-note">Choose what you are studying and start your timer without leaving the Home page.</p></div></div><button class="start-study-home" id="startStudy" type="button"><span class="start-study-icon">▶</span><span><strong>Start Study</strong><small>Select a subject to begin</small></span><span class="start-study-chevron">⌄</span></button><div id="homeActiveStudy" class="home-active-study hidden"><div class="active-study-head"><span class="live-pill"><i></i> Studying Now</span><button id="activeStudyClose" type="button" aria-label="Collapse timer">⌃</button></div><div class="active-study-subject" id="activeStudySubject">—</div><div class="active-study-timer" id="activeStudyTimer">00:00:00</div><div class="active-study-meta"><span id="activeStudyStarted">Started just now</span><span id="activeStudyToday">Today</span></div><div class="active-study-actions"><button class="pause-study" id="pauseStudy" type="button">Ⅱ Pause</button><button class="stop-study" id="stopStudy" type="button">■ Complete</button></div></div></section><section class="hero-card"><div><p class="eyebrow">MY CMA ZONE</p><h1>Prepare smarter. Track everything.</h1><p class="hero-text">Choose a subject, start studying and track every focused session.</p></div><div class="hero-actions"><a class="secondary-button primary-link statistics-home-button" href="pages/statistics.html">Statistics</a></div></section>
 <section class="quick-actions">
 <a class="quick-action quick-blue" href="pages/statistics.html"><span>▥</span><div><strong>Statistics</strong><small>View progress & reports</small></div><b>›</b></a>
 <a class="quick-action quick-purple" href="pages/study.html"><span>▤</span><div><strong>Subjects</strong><small>Manage subjects & topics</small></div><b>›</b></a>
 <button class="quick-action quick-orange" type="button" id="quickRevision"><span>⟳</span><div><strong>Revision</strong><small>Track revision</small></div><b>›</b></button>
 <button class="quick-action quick-green" type="button" id="quickDaily"><span>▣</span><div><strong>Daily Plan</strong><small>Today's targets</small></div><b>›</b></button>
-</section><section class="dashboard-grid">
-<article class="panel"><div class="panel-heading"><div><p class="eyebrow">ACADEMIC SETUP</p><h2>Choose your course</h2></div></div>
-<div class="field-grid"><label>Level<select id="levelSelect"><option value="">Select level</option><option value="foundation">Foundation</option><option value="inter">Intermediate</option><option value="final">Final</option></select></label>
-<label id="groupWrap">Group<select id="groupSelect" disabled><option value="">Select group</option></select></label></div>
-<div id="electiveWrap" class="elective-wrap hidden"><label>Choose your elective<select id="electiveSelect"><option value="">Select elective</option></select></label><div class="profile-status">Final Group 4 has three compulsory papers plus one elective.</div></div>
-<div id="profileStatus" class="profile-status">Select your level and group.</div></article>
-<article class="panel"><div class="panel-heading"><div><p class="eyebrow">COUNTDOWN</p><h2>Attempt</h2></div><button class="text-button" id="editAttempt" type="button">Edit</button></div>
-<div class="countdown-number" id="attemptCountdown">—</div><div class="countdown-label" id="attemptDateLabel">Select your course and group</div>
-<div class="countdown-edit hidden" id="attemptEditor"><label>Attempt name<input id="attemptName" placeholder="e.g. December 2026 Attempt"></label><label>Exam date<input id="attemptDate" type="date"></label><button class="primary-button" id="saveAttempt" type="button">Save Attempt</button></div></article>
 </section>
 
 <section class="panel">
