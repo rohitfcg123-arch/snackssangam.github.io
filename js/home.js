@@ -285,16 +285,20 @@ if (electiveSelect) {
   };
 }
 
-$("saveProfile").onclick = () => {
-  state.level = level.value;
-  state.group = group.value;
-  state.elective = electiveSelect?.value || "";
-  syncExamDateToSelection();
-  save();
-  $("profileStatus").textContent = "Selection saved on this device.";
-  updateStartStudyLink();
-  tick();
-};
+// Academic selection is saved automatically on level/group/elective changes.
+const saveProfileButton = $("saveProfile");
+if (saveProfileButton) {
+  saveProfileButton.onclick = () => {
+    state.level = level.value;
+    state.group = group.value;
+    state.elective = electiveSelect?.value || "";
+    syncExamDateToSelection();
+    save();
+    $("profileStatus").textContent = "Selection saved on this device.";
+    updateStartStudyLink();
+    tick();
+  };
+}
 
 function countdownParts(date) {
   if (!date) return null;
