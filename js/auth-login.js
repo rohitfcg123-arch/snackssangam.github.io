@@ -5,7 +5,7 @@ PURPOSE: Email/password and Google authentication for CMA Zone.
 EDITABLE AREAS: Successful-login redirect and UI messages.
 DEPENDENCIES: js/firebase.js, pages/signin.html.
 IMPORTANT NOTES: Google uses popup authentication to avoid redirect-storage issues on GitHub Pages/Chrome.
-LAST UPDATED: 2026-10-04
+LAST UPDATED: 2026-10-05
 */
 
 import { auth } from "./firebase.js";
@@ -18,7 +18,8 @@ import {
   setPersistence,
   browserLocalPersistence,
   GoogleAuthProvider,
-  signInWithPopup
+  signInWithRedirect,
+  getRedirectResult
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const loginForm = document.getElementById("loginForm");
@@ -74,22 +75,31 @@ document.getElementById("googleLogin")?.addEventListener("click", async () => {
     await setPersistence(auth, browserLocalPersistence);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
-    const result = await signInWithPopup(auth, provider);
-    if (!result?.user) throw new Error("Google sign-in completed but no Firebase user was returned.");
-    // Wait until Firebase has restored the authenticated session before navigating.
-    await new Promise((resolve, reject) => {
-      const unsubscribe = onAuthStateChanged(auth, user => {
-        unsubscribe();
-        if (user) resolve(user);
-        else reject(new Error("Firebase session was not restored."));
-      });
-      setTimeout(() => { unsubscribe(); reject(new Error("Firebase authentication session timed out.")); }, 8000);
-    });
-    goHome();
+    await signInWithRedirect(auth, provider);
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
   }
 });
+
+// When Google redirects back to this page, Firebase completes the sign-in here.
+// This is more reliable on Android/Chrome than a popup flow.
+(async function finishGoogleRedirect() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (result?.user) {
+      showMessage("Login successful. Opening CMA Zone…", "success");
+      await new Promise((resolve, reject) => {
+        const unsubscribe = onAuthStateChanged(auth, user => {
+          if (user) { unsubscribe(); resolve(user); }
+        });
+        setTimeout(() => { unsubscribe(); reject(new Error("Firebase authentication session timed out.")); }, 8000);
+      });
+      goHome();
+    }
+  } catch (error) {
+    showMessage(firebaseMessage(error), "error");
+  }
+})();
 
 document.getElementById("showLogin")?.addEventListener("click", () => setMode("login"));
 
