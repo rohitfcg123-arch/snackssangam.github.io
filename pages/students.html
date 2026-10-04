@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#14213D"><title>CMA Zone — Student Details</title><link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/base.css"><link rel="stylesheet" href="../css/students.css?v=20261005v1"></head>
+<body>
+<header class="app-header"><a class="students-back" href="../index.html">‹</a><div class="brand"><span class="brand-mark">C</span><div><strong>CMA Zone</strong><span class="brand-subtitle">Student Details</span></div></div></header>
+<main class="students-page">
+<section class="students-head"><div><p class="eyebrow">STUDENTS</p><h1>Student Details</h1><p>View Firebase profile details and add students to the CMA Zone student directory.</p></div><button id="addStudentBtn" class="primary-button" type="button">＋ Add Student</button></section>
+<section id="currentCard" class="student-card"><div class="student-card-title"><span>👤</span><div><p class="eyebrow">CURRENT ACCOUNT</p><h2 id="currentName">Loading…</h2></div></div><div id="currentDetails" class="detail-grid"></div></section>
+<section class="student-card"><div class="student-card-title"><span>👥</span><div><p class="eyebrow">STUDENT DIRECTORY</p><h2>Added Students</h2></div><span id="studentCount" class="count-badge">0</span></div><div id="studentList" class="student-list"><div class="empty-state">Loading students…</div></div></section>
+</main>
+<div id="studentModal" class="modal hidden"><div class="modal-sheet"><div class="modal-head"><div><p class="eyebrow">ADD STUDENT</p><h2>Add Student</h2></div><button id="closeStudentModal" type="button">×</button></div><form id="studentForm"><label>Name<input id="studentName" required placeholder="Student name"></label><label>Email<input id="studentEmail" type="email" required placeholder="student@example.com"></label><label>Phone<input id="studentPhone" placeholder="Phone number"></label><label>Course / Group<input id="studentCourse" placeholder="e.g. CMA Final Group 3"></label><label>Attempt<input id="studentAttempt" placeholder="e.g. December 2026"></label><button class="primary-button" type="submit">Save Student</button><p id="studentMessage" class="form-message"></p></form></div></div>
+<script type="module" src="../js/students.js?v=20261005v1"></script>
+</body></html>
