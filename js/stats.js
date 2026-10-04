@@ -5,7 +5,7 @@ PURPOSE: Live student study dashboard with period, day, week, month and trend vi
 EDITABLE AREAS: Dashboard calculations, navigation and chart presentation.
 DEPENDENCIES: index.html, css/home.css, js/firebase.js, js/academic.js.
 IMPORTANT NOTES: Study data comes from Cloud Firestore. Date keys match js/study.js.
-LAST UPDATED: 2026-10-04
+LAST UPDATED: 2026-10-05
 */
 
 import { auth, db } from "./firebase.js";
@@ -83,6 +83,41 @@ async function load(){
   }
 }
 
+function safeJson(key){try{return JSON.parse(localStorage.getItem(key)||"{}")}catch{return{}}}
+function escapeHtml(v){return String(v??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+function dashboardDates(){const all=[...Object.keys(days),today()];return [...new Set(all)].sort()}
+function renderDashboard(){
+  if(!user)return;
+  const n=names(), ds=dashboardDates(), rows=ds.map(k=>({key:k,seconds:total(days[k])})), active=rows.filter(x=>x.seconds>0);
+  const totalTime=active.reduce((s,x)=>s+x.seconds,0), avg=active.length?totalTime/active.length:0, best=active.slice().sort((a,b)=>b.seconds-a.seconds)[0];
+  const set=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v};
+  set("totalTime",short(totalTime)||"0m");set("activeDays",active.length);set("dailyAverage",short(avg)||"0m");set("bestDay",best?short(best.seconds):"—");set("bestDayLabel",best?label(best.key):"No study yet");
+  const st=safeJson("cma_zone_home_v1"), levelLabel=(typeof ACADEMIC!=="undefined"&&ACADEMIC[st.level])?ACADEMIC[st.level].label:(st.level||"");
+  set("selectionBadge",st.level&&st.group?(levelLabel+" • "+(st.group==="both"?"Both Groups":String(st.group).toUpperCase())):"No selection saved");
+  const count=safeJson("cma_zone_countdowns_v2"), attemptDate=count.attemptDate||st.attemptDate||"";
+  set("attemptBadge",count.attemptName||st.attemptName||"Attempt not set");
+  set("examCountdown",attemptDate?Math.max(0,Math.ceil((new Date(attemptDate+"T00:00:00").getTime()-Date.now())/86400000))+" days":"—");
+  set("examLabel",attemptDate?(count.attemptName||st.attemptName||"Exam attempt")+" • "+attemptDate:"Set course/group on Home");
+  set("revisionCountdown",count.revisionDate?Math.max(0,Math.ceil((new Date(count.revisionDate+"T00:00:00").getTime()-Date.now())/86400000))+" days":"—");
+  set("revisionLabel",count.revisionDate?(count.revisionName||"Revision")+" • "+count.revisionDate:"No revision countdown set");
+  const selectedIds=Object.keys(n), trackedIds=selectedIds.filter(id=>ds.some(k=>Number(days[k]?.totals?.[id]||0)>0));
+  set("trackedPercent",(selectedIds.length?Math.round(trackedIds.length/selectedIds.length*100):0)+"%");set("trackedSubjects",trackedIds.length);set("selectedSubjects",selectedIds.length);set("customSubjects",customSubjects.length);
+  const sessions=Object.values(days).reduce((s,d)=>s+(Array.isArray(d.sessions)?d.sessions.length:0),0);set("sessionCount",sessions);
+  set("overviewText",selectedIds.length?(trackedIds.length+" of "+selectedIds.length+" selected subjects have recorded study time."):("No course/group selected. Your recorded study time is still shown above."));
+  const ring=document.getElementById("overviewRing");if(ring)ring.style.setProperty("--progress",(selectedIds.length?trackedIds.length/selectedIds.length*360:0)+"deg");
+  const by={};Object.values(days).forEach(d=>Object.entries(d.totals||{}).forEach(([id,v])=>by[id]=(by[id]||0)+Number(v||0)));
+  if(days[today()]?.active?.subjectId)by[days[today()].active.subjectId]=(by[days[today()].active.subjectId]||0)+elapsed(days[today()].active);
+  const subjectEl=document.getElementById("subjectPerformance");
+  if(subjectEl){const entries=Object.entries(n).map(([id,name])=>({id,name,seconds:by[id]||0})).sort((a,b)=>b.seconds-a.seconds),max=Math.max(1,...entries.map(x=>x.seconds));subjectEl.innerHTML=entries.length?entries.map(x=>'<div class="subject-row-stat"><div class="subject-row-name"><strong>'+escapeHtml(x.name)+'</strong><span>'+short(x.seconds)+'</span></div><div class="subject-track"><i style="width:'+Math.round(x.seconds/max*100)+'%"></i></div></div>').join(""):'<div class="empty-stat">No subjects available. Start a subject timer or add a custom subject.</div>'}
+  const heat=document.getElementById("heatmap"),heatRows=Array.from({length:28},(_,i)=>{const k=add(today(),i-27);return{k,seconds:total(days[k])}});
+  if(heat){const max=Math.max(1,...heatRows.map(x=>x.seconds));set("consistencyLabel",heatRows.filter(x=>x.seconds>0).length+" active days");heat.innerHTML=heatRows.map(x=>'<button type="button" title="'+label(x.k)+' • '+short(x.seconds)+'" class="heat-cell h'+Math.min(4,Math.ceil(x.seconds/max*4))+'"></button>').join("")}
+  const ws=monday(today()),week=Array.from({length:7},(_,i)=>{const k=add(ws,i);return{k,seconds:total(days[k])}}),weekSum=week.reduce((s,x)=>s+x.seconds,0),weekActive=week.filter(x=>x.seconds>0).length,chartMax=Math.max(1,...week.map(x=>x.seconds));
+  set("weekTotal",short(weekSum));set("weekHours",short(weekSum));set("weekDays",weekActive+"/7");set("weekPct",weekActive?Math.round(weekActive/7*100)+"%":"0%");
+  const bar=document.getElementById("weekBar"),dayBar=document.getElementById("weekDayBar");if(bar)bar.style.width="100%";if(dayBar)dayBar.style.width=Math.round(weekActive/7*100)+"%";
+  const weekly=document.getElementById("weeklyChart");if(weekly)weekly.innerHTML=week.map(x=>'<div class="chart-col"><span>'+short(x.seconds)+'</span><i style="height:'+Math.max(4,Math.round(x.seconds/chartMax*150))+'px"></i><small>'+date(x.key).toLocaleDateString("en-IN",{timeZone:"UTC",weekday:"short"})+'</small></div>').join("");
+  const weak=document.getElementById("weakAreas");if(weak){const wr=Object.entries(n).map(([id,name])=>({name,seconds:by[id]||0})).sort((a,b)=>a.seconds-b.seconds).slice(0,5);weak.innerHTML=wr.length?wr.map(x=>'<div class="weak-row"><span>'+escapeHtml(x.name)+'</span><strong>'+short(x.seconds)+'</strong><small>'+(!x.seconds?"Not started":"Lowest tracked time")+'</small></div>').join(""):'<div class="empty-stat">No selected subjects yet.</div>'}
+  const recent=document.getElementById("recentActivity");if(recent){const rr=[];Object.entries(days).forEach(([k,d])=>(d.sessions||[]).forEach(s=>rr.push({...s,date:k})));rr.sort((a,b)=>Number(b.end||0)-Number(a.end||0));recent.innerHTML=rr.slice(0,6).map(x=>'<div class="recent-row"><span class="recent-dot"></span><div><strong>'+escapeHtml(n[x.subjectId]||x.subjectId)+'</strong><small>'+label(x.date)+' • '+short(x.duration)+'</small></div><b>'+new Date(Number(x.end||0)).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"})+'</b></div>').join("")||'<div class="empty-stat">No completed sessions yet.</div>'}
+}
 function nav(title,prev,next,nextDisabled=false){
   return '<div class="stats-navigation"><button type="button" class="stats-nav-button" data-action="'+prev+'">‹</button><strong>'+title+'</strong><button type="button" class="stats-nav-button" data-action="'+next+'" '+(nextDisabled?"disabled":"")+'>›</button></div>';
 }
@@ -171,6 +206,7 @@ tabs.forEach(t=>t.onclick=async()=>{
 onAuthStateChanged(auth,async u=>{
   user=u;
   await load();
+  renderDashboard();
   render(activeView());
 });
 setInterval(async()=>{
@@ -178,6 +214,7 @@ setInterval(async()=>{
   // Avoid replacing the whole statistics DOM while the student is actively interacting with it.
   if(Date.now()-lastInteractionAt<12000) return;
   await load();
+  renderDashboard();
   const y=window.scrollY;
   render(activeView());
   requestAnimationFrame(()=>window.scrollTo(0,y));
