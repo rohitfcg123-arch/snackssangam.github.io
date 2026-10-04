@@ -26,6 +26,7 @@ let state = { days: {}, active: null };
 let SUBJECTS = [];
 let customSubjects = [];
 let saving = false;
+const CUSTOM_CACHE_PREFIX = "cma_zone_custom_subjects_v1:";
 
 function todayKey() {
   const now = new Date();
@@ -45,8 +46,27 @@ function configDocRef() {
   return doc(db, "users", currentUser.uid, "studyDays", CONFIG_DOC_ID);
 }
 
+function customCacheKey(){
+  return currentUser ? CUSTOM_CACHE_PREFIX + currentUser.uid : "";
+}
+function readCachedCustomSubjects(){
+  if(!currentUser) return [];
+  try{
+    const items=JSON.parse(localStorage.getItem(customCacheKey())||"[]");
+    return Array.isArray(items)
+      ? items.filter(item=>Array.isArray(item)&&item.length>=2&&item[0]&&item[1])
+        .map(item=>[String(item[0]),String(item[1]),"custom"])
+      : [];
+  }catch{return [];}
+}
+function writeCachedCustomSubjects(items){
+  if(!currentUser) return;
+  try{localStorage.setItem(customCacheKey(),JSON.stringify(items));}catch{}
+}
+
 async function loadCustomSubjects() {
   if (!currentUser) return [];
+  const cached=readCachedCustomSubjects();
 
   try {
     const snap = await getDoc(configDocRef());
@@ -56,18 +76,24 @@ async function loadCustomSubjects() {
       ? snap.data().customSubjects
       : [];
 
-    return items
+    const remote=items
       .filter(item => Array.isArray(item) && item.length >= 2 && item[0] && item[1])
       .map(item => [String(item[0]), String(item[1]), "custom"]);
+    const merged=[...remote,...cached].filter((item,i,arr)=>
+      arr.findIndex(x=>String(x[0])===String(item[0]))===i
+    );
+    writeCachedCustomSubjects(merged);
+    return merged;
   } catch (error) {
     console.error("Firestore custom subject read failed:", error);
     showFirestoreError(error);
-    return [];
+    return cached;
   }
 }
 
 async function saveCustomSubjects() {
   if (!currentUser) return;
+  writeCachedCustomSubjects(customSubjects);
 
   try {
     await setDoc(
@@ -314,6 +340,8 @@ async function addCustomSubject() {
     "custom"
   ]);
 
+  // Persist locally immediately so a render/auth refresh cannot make the new subject disappear.
+  writeCachedCustomSubjects(customSubjects);
   await saveCustomSubjects();
   refreshSubjects();
   closeCustomSubjectEditor();
