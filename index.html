@@ -45,5 +45,13 @@
 
 </main><div class="study-subject-modal hidden" id="studySubjectModal" role="dialog" aria-modal="true" aria-labelledby="studySubjectTitle"><div class="study-subject-sheet"><div class="study-sheet-head"><div><p class="eyebrow">START STUDY</p><h2 id="studySubjectTitle">Choose subject to start</h2></div><button id="closeStudySubject" type="button" aria-label="Close">×</button></div><div id="homeStudySubjectList" class="home-study-subject-list"></div></div></div>
 <script src="js/academic.js?v=20261004f"></script>
-<script type="module" src="js/home.js?v=20261005menu1"></script>
+<script>
+document.addEventListener("DOMContentLoaded",function(){
+  const b=document.getElementById("menuToggle"),m=document.getElementById("sideMenu"),o=document.getElementById("menuOverlay"),x=document.getElementById("menuClose");
+  function open(){if(m)m.classList.add("open");if(o)o.classList.remove("hidden");if(m)m.setAttribute("aria-hidden","false");document.body.classList.add("menu-open");}
+  function close(){if(m)m.classList.remove("open");if(o)o.classList.add("hidden");if(m)m.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open");}
+  if(b)b.onclick=open;if(x)x.onclick=close;if(o)o.onclick=close;
+});
+</script>
+<script type="module" src="js/home.js?v=20261005menu2"></script>
 </body></html>
