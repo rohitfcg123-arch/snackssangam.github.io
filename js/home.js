@@ -118,6 +118,37 @@ const EXAM_DATES = {
   }
 };
 
+async function saveCloudState() {
+  if (!auth.currentUser) return;
+  try {
+    await setDoc(doc(db,"users",auth.currentUser.uid,"studyDays","__config__"),{
+      courseLevel:state.level||"",group:state.group||"",elective:state.elective||"",
+      attemptMonth:state.attemptMonth||"",attemptYear:Number(state.attemptYear)||0,
+      attemptName:state.attemptName||"",attemptDate:state.attemptDate||"",
+      revisionName:state.revisionName||"",revisionDate:state.revisionDate||"",
+      updatedAt:Date.now()
+    },{merge:true});
+  } catch(e){ console.error("Cloud setup save failed:",e); }
+}
+async function loadCloudState(user) {
+  if (!user) return;
+  try {
+    const snap=await getDoc(doc(db,"users",user.uid,"studyDays","__config__"));
+    if (!snap.exists()) return;
+    const d=snap.data()||{};
+    if(d.courseLevel) state.level=d.courseLevel;
+    if(d.group) state.group=d.group;
+    if(d.elective!==undefined) state.elective=d.elective;
+    if(d.attemptMonth) state.attemptMonth=d.attemptMonth;
+    if(d.attemptYear) state.attemptYear=Number(d.attemptYear);
+    if(d.attemptName) state.attemptName=d.attemptName;
+    if(d.attemptDate) state.attemptDate=d.attemptDate;
+    if(d.revisionName) state.revisionName=d.revisionName;
+    if(d.revisionDate) state.revisionDate=d.revisionDate;
+    localStorage.setItem(STORE,JSON.stringify(state));
+    localStorage.setItem(COUNTDOWN_STORE,JSON.stringify({attemptName:state.attemptName||"",attemptDate:state.attemptDate||"",revisionName:state.revisionName||"",revisionDate:state.revisionDate||""}));
+  } catch(e){ console.error("Cloud setup load failed:",e); }
+}
 function save() {
   localStorage.setItem(STORE, JSON.stringify(state));
   localStorage.setItem(COUNTDOWN_STORE, JSON.stringify({
@@ -126,6 +157,7 @@ function save() {
     revisionName: state.revisionName || "",
     revisionDate: state.revisionDate || ""
   }));
+  void saveCloudState();
 }
 
 function groupLabel(key) {
@@ -266,7 +298,7 @@ async function homeStop(){if(!homeStudyState.active)return;const a=homeStudyStat
 function renderHomeActive(){const c=$("homeActiveStudy"),b=$("startStudy");if(!c||!b)return;if(!homeStudyState.active){c.classList.add("hidden");b.classList.remove("hidden");return}c.classList.remove("hidden");b.classList.add("hidden");$("activeStudySubject").textContent=homeSubjectName(homeStudyState.active.subjectId);$("activeStudyTimer").textContent=homeFormat(homeElapsed());$("activeStudyStarted").textContent="Started "+new Date(homeStudyState.active.startedAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});$("activeStudyToday").textContent="Today • "+homeFormat(Object.values(homeStudyState.totals).reduce((a,v)=>a+Number(v||0),0)+homeElapsed())+" total"}
 async function homeAddCustom(){const n=prompt("Enter custom subject name");if(!n?.trim()||!homeStudyUser)return;const name=n.trim();if(homeCustomSubjects.some(x=>x[1].toLowerCase()===name.toLowerCase())){alert("This subject is already added.");return}homeCustomSubjects.push(["custom_"+Date.now(),name,"custom"]);try{localStorage.setItem(homeCacheKey(),JSON.stringify(homeCustomSubjects));await setDoc(homeConfigRef(),{customSubjects:homeCustomSubjects,updatedAt:Date.now()},{merge:true})}catch(e){console.error(e)}renderHomeChoices()}
 $("startStudy")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openChooser();});$("closeStudySubject")?.addEventListener("click",closeChooser);$("studySubjectModal")?.addEventListener("click",e=>{if(e.target.id==="studySubjectModal")closeChooser()});$("stopStudy")?.addEventListener("click",homeStop);
-onAuthStateChanged(auth,async user=>{homeStudyUser=user;if(user){await homeLoadStudy();renderHomeActive()}else{homeStudyState={totals:{},sessions:[],active:null};renderHomeActive()}});
+onAuthStateChanged(auth,async user=>{homeStudyUser=user;if(user){await loadCloudState(user);await homeLoadStudy();renderHomeActive();tick()}else{homeStudyState={totals:{},sessions:[],active:null};renderHomeActive()}});
 setInterval(renderHomeActive,1000);
 
 
