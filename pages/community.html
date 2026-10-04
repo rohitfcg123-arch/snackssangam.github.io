@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#14213D">
+<title>CMA Zone — Community</title>
+<link rel="stylesheet" href="../css/variables.css"><link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/community.css?v=20261005v1">
+</head>
+<body>
+<header class="app-header community-header">
+<a class="community-back" href="../index.html">‹</a>
+<div class="brand"><span class="brand-mark">C</span><div><strong>CMA Zone</strong><span class="brand-subtitle">CMA Community</span></div></div>
+<a class="community-home" href="../index.html">Home</a>
+</header>
+<main class="community-page">
+<section class="community-hero">
+<div><p class="eyebrow">CMA COMMUNITY</p><h1>Study together. Grow together. 💬</h1><p>Ask doubts, share preparation tips and discuss CMA with other learners.</p></div>
+<div class="online-pill"><i></i><span id="onlineText">Community</span></div>
+</section>
+<section class="community-chat panel">
+<div class="chat-head"><div><strong>General Discussion</strong><small>Be respectful • No spam • CMA focused</small></div><span id="messageCount">0 messages</span></div>
+<div class="chat-messages" id="chatMessages"><div class="chat-empty">Loading community messages…</div></div>
+<form class="chat-composer" id="chatForm">
+<textarea id="messageInput" rows="1" maxlength="1000" placeholder="Write a message…" autocomplete="off"></textarea>
+<button type="submit" id="sendMessage" aria-label="Send message">➤</button>
+</form>
+<p class="chat-status" id="chatStatus">Only logged-in CMA Zone users can post.</p>
+</section>
+</main>
+<script type="module" src="../js/community.js?v=20261005v1"></script>
+</body>
+</html>
