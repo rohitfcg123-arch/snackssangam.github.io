@@ -1,0 +1,27 @@
+/*
+FILE: js/course.js
+REFERENCE: CMA-ZONE-COURSE-V1
+PURPOSE: Course/group selection and custom-subject management.
+EDITABLE AREAS: Storage keys and UI labels.
+DEPENDENCIES: academic.js, firebase.js, Firestore users/{uid}/studyDays/__config__.
+*/
+import {auth,db} from "./firebase.js";
+import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {doc,getDoc,setDoc} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+const STORE="cma_zone_home_v1",CUSTOM_PREFIX="cma_zone_custom_subjects_v1:";
+const $=id=>document.getElementById(id);let state={},user=null,custom=[];
+function loadState(){try{state=JSON.parse(localStorage.getItem(STORE)||"{}")}catch{state={}}}
+function saveState(){localStorage.setItem(STORE,JSON.stringify(state))}
+function key(){return user?CUSTOM_PREFIX+user.uid:""}
+function builtIn(){if(!state.level||!state.group||!ACADEMIC[state.level])return[];const g=ACADEMIC[state.level].groups;if(state.group==="both")return["g1","g2","g3","g4"].filter(k=>g[k]).flatMap(k=>g[k]);let a=g[state.group]||[];if(state.level==="final"&&state.group==="g4"&&state.elective){const e=g.electives?.find(x=>x[0]===state.elective);if(e)a=[...a,e]}return a}
+function names(){return [...builtIn(),...custom]}
+async function loadCustom(){if(!user)return;try{const s=await getDoc(doc(db,"users",user.uid,"studyDays","__config__"));const remote=s.exists()&&Array.isArray(s.data().customSubjects)?s.data().customSubjects:[];let local=[];try{local=JSON.parse(localStorage.getItem(key())||"[]")}catch{}custom=[...remote,...local].filter((x,i,a)=>Array.isArray(x)&&x.length>=2&&a.findIndex(y=>y[0]===x[0])===i).map(x=>[String(x[0]),String(x[1]),"custom"]);localStorage.setItem(key(),JSON.stringify(custom))}catch(e){console.error(e)}}
+function renderLevels(){const box=$("levelGrid");box.innerHTML=Object.entries(ACADEMIC).map(([id,x])=>'<button class="course-choice level-choice '+(state.level===id?"selected":"")+'" data-level="'+id+'"><span>'+({foundation:"🎓",inter:"📖",final:"🏆"}[id])+'</span><strong>'+x.label+'</strong><small>Select level</small></button>').join("");box.querySelectorAll("[data-level]").forEach(b=>b.onclick=()=>{state.level=b.dataset.level;state.group="";state.elective="";saveState();render()})}
+function renderGroups(){const card=$("groupCard");if(!state.level){card.classList.add("hidden");return}card.classList.remove("hidden");const data=ACADEMIC[state.level].groups;let keys=Object.keys(data).filter(k=>k!=="electives");if(state.level!=="foundation")keys.push("both");$("groupGrid").innerHTML=keys.map(k=>'<button class="course-choice group-choice '+(state.group===k?"selected":"")+'" data-group="'+k+'"><span>▣</span><strong>'+({g1:"Group 1",g2:"Group 2",g3:"Group 3",g4:"Group 4",foundation:"Foundation",both:"Both Groups"}[k]||k)+'</strong><small>'+((data[k]||[]).length||"All")+' subjects</small></button>').join("");$("groupGrid").querySelectorAll("[data-group]").forEach(b=>b.onclick=()=>{state.group=b.dataset.group;state.elective="";saveState();render()})}
+function renderSubjects(){const card=$("subjectCard");if(!state.level||!state.group){card.classList.add("hidden");return}card.classList.remove("hidden");const rows=names();$("courseSubjects").innerHTML=rows.map(x=>'<div class="course-subject-row"><span class="course-subject-icon">'+(x[2]==="custom"?"＋":"▥")+'</span><div><strong>'+x[1]+'</strong><small>'+((x[2]==="custom")?"Custom subject":"CMA syllabus")+'</small></div>'+(x[2]==="custom"?'<button type="button" data-remove="'+x[0]+'">−</button>':'')+'</div>').join("")||'<p class="empty-state">No subjects found.</p>';$("courseSubjects").querySelectorAll("[data-remove]").forEach(b=>b.onclick=()=>removeCustom(b.dataset.remove));$("courseSaveNote").textContent=rows.length+" subjects available on Home → Start Study."}
+async function addCustom(){const n=prompt("Enter custom subject name");if(!n?.trim())return;const name=n.trim();if(custom.some(x=>x[1].toLowerCase()===name.toLowerCase())){alert("This subject is already added.");return}custom.push(["custom_"+Date.now(),name,"custom"]);localStorage.setItem(key(),JSON.stringify(custom));if(user)await setDoc(doc(db,"users",user.uid,"studyDays","__config__"),{customSubjects:custom,updatedAt:Date.now()},{merge:true});renderSubjects()}
+async function removeCustom(id){custom=custom.filter(x=>x[0]!==id);localStorage.setItem(key(),JSON.stringify(custom));if(user)await setDoc(doc(db,"users",user.uid,"studyDays","__config__"),{customSubjects:custom,updatedAt:Date.now()},{merge:true});renderSubjects()}
+function render(){renderLevels();renderGroups();renderSubjects()}
+$("addCustomCourse").onclick=addCustom;
+loadState();
+onAuthStateChanged(auth,async u=>{user=u;await loadCustom();render()});
