@@ -54,4 +54,25 @@ document.addEventListener("DOMContentLoaded",function(){
 });
 </script>
 <script type="module" src="js/home.js?v=20261005menu2"></script>
+<script type="module">
+import { auth } from "./js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+onAuthStateChanged(auth, user => {
+  const login=document.getElementById("loginButton");
+  const logout=document.getElementById("headerLogout");
+  const card=document.getElementById("greetingCard");
+  const title=document.getElementById("greetingTitle");
+  const quote=document.getElementById("greetingQuote");
+  if(user){
+    if(login) login.classList.add("hidden");
+    if(logout) logout.classList.remove("hidden");
+    if(card) card.classList.remove("hidden");
+    if(title) title.textContent="Hi "+((user.displayName||user.email||"Student").split(/\\s+/)[0])+" 👋";
+    if(quote) quote.textContent="Your consistency today builds your confidence tomorrow.";
+  } else {
+    if(login) login.classList.remove("hidden");
+    if(logout) logout.classList.add("hidden");
+  }
+});
+</script>
 </body></html>
