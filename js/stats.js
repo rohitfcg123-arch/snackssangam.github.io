@@ -16,6 +16,8 @@ const view = document.getElementById("reportView");
 const tabs = document.querySelectorAll("[data-report-view]");
 let user = null, days = {}, customSubjects = [];
 let selectedDay = today(), weekStart = monday(today()), monthKey = today().slice(0,7), periodEnd = today();
+let lastInteractionAt = 0;
+const CUSTOM_CACHE_PREFIX = "cma_zone_custom_subjects_v1:";
 
 function today(){
   const now=new Date();
@@ -34,6 +36,16 @@ function elapsed(a){ return a?Math.max(0,(Date.now()-Number(a.startedAt||0))/100
 function total(day){ if(!day)return 0; return Object.values(day.totals||{}).reduce((a,b)=>a+Number(b||0),0)+elapsed(day.active); }
 function range(n,end=periodEnd){ return Array.from({length:n},(_,i)=>{const k=add(end,i-n+1);return {key:k,seconds:total(days[k])};}); }
 
+function getCachedCustomSubjects(){
+  if(!user) return [];
+  try{
+    const raw=localStorage.getItem(CUSTOM_CACHE_PREFIX+user.uid);
+    const items=JSON.parse(raw||"[]");
+    return Array.isArray(items)
+      ? items.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>[String(x[0]),String(x[1])])
+      : [];
+  }catch{return [];}
+}
 function names(){
   const out={}, st=JSON.parse(localStorage.getItem("cma_zone_home_v1")||"{}");
   if(typeof ACADEMIC!=="undefined" && st.level && st.group && ACADEMIC[st.level]){
@@ -44,22 +56,31 @@ function names(){
       const e=g.electives?.find(x=>x[0]===st.elective); if(e) out[e[0]]=e[1];
     }
   }
-  customSubjects.forEach(x=>out[x[0]]=x[1]);
+  [...customSubjects,...getCachedCustomSubjects()].forEach(x=>out[x[0]]=x[1]);
   return out;
 }
 
 async function load(){
   if(!user){days={};customSubjects=[];return;}
+  const cached=getCachedCustomSubjects();
   try{
     const snap=await getDocs(collection(db,"users",user.uid,"studyDays"));
     days={}; snap.forEach(x=>{if(x.id!=="__config__")days[x.id]=x.data();});
   }catch(e){console.error("Firestore studyDays read failed:",e);days={};}
   try{
     const c=await getDoc(doc(db,"users",user.uid,"studyDays","__config__"));
-    customSubjects=c.exists()&&Array.isArray(c.data().customSubjects)
+    const remote=c.exists()&&Array.isArray(c.data().customSubjects)
       ? c.data().customSubjects.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>[String(x[0]),String(x[1])])
       : [];
-  }catch(e){console.error("Firestore custom subject read failed:",e);customSubjects=[];}
+    const merged=[...remote,...cached].filter((item,i,arr)=>arr.findIndex(x=>String(x[0])===String(item[0]))===i);
+    customSubjects=merged;
+  }catch(e){
+    console.error("Firestore custom subject read failed:",e);
+    customSubjects=cached;
+  }
+  if(customSubjects.length){
+    try{localStorage.setItem(CUSTOM_CACHE_PREFIX+user.uid,JSON.stringify(customSubjects));}catch{}
+  }
 }
 
 function nav(title,prev,next,nextDisabled=false){
@@ -141,7 +162,24 @@ function render(v="period"){
   if(!user){view.innerHTML='<div class="empty-timeline">Login to see your personal study statistics.</div>';return;}
   if(v==="period")renderPeriod();else if(v==="day")renderDay();else if(v==="week")renderWeek();else if(v==="month")renderMonth();else renderTrend();
 }
-tabs.forEach(t=>t.onclick=async()=>{tabs.forEach(x=>x.classList.toggle("active",x===t));await load();render(t.dataset.reportView);});
-onAuthStateChanged(auth,async u=>{user=u;await load();render(activeView());});
-setInterval(async()=>{if(user){await load();render(activeView());}},5000);
+tabs.forEach(t=>t.onclick=async()=>{
+  lastInteractionAt=Date.now();
+  tabs.forEach(x=>x.classList.toggle("active",x===t));
+  await load();
+  render(t.dataset.reportView);
+});
+onAuthStateChanged(auth,async u=>{
+  user=u;
+  await load();
+  render(activeView());
+});
+setInterval(async()=>{
+  if(!user || document.visibilityState!=="visible") return;
+  // Avoid replacing the whole statistics DOM while the student is actively interacting with it.
+  if(Date.now()-lastInteractionAt<12000) return;
+  await load();
+  const y=window.scrollY;
+  render(activeView());
+  requestAnimationFrame(()=>window.scrollTo(0,y));
+},15000);
 render();
