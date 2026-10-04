@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#14213D">
+<title>Statistics — CMA Zone</title>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/base.css">
+<link rel="stylesheet" href="../css/statistics.css?v=20261005a">
+</head>
+<body>
+<header class="app-header statistics-header">
+  <a class="back-link" href="../index.html" aria-label="Back to Home">←</a>
+  <div class="stats-brand">
+    <strong>Study Statistics</strong>
+    <span class="brand-subtitle">Your real study performance</span>
+  </div>
+  <a class="header-home-link" href="../index.html">Home</a>
+</header>
+
+<main class="statistics-page">
+  <section class="stats-hero">
+    <div>
+      <p class="eyebrow">CMA ZONE • ANALYTICS</p>
+      <h1>Study Statistics</h1>
+      <p>Track your actual study time, consistency, subjects and countdowns in one place.</p>
+    </div>
+    <div class="stats-filters">
+      <span id="selectionBadge">Loading selection…</span>
+      <span id="attemptBadge">Loading attempt…</span>
+    </div>
+  </section>
+
+  <section class="stats-kpi-grid">
+    <article class="stats-kpi kpi-blue"><span class="kpi-icon">◷</span><div><span>Study Time</span><strong id="totalTime">—</strong><small id="periodLabel">All recorded days</small></div></article>
+    <article class="stats-kpi kpi-green"><span class="kpi-icon">✓</span><div><span>Active Days</span><strong id="activeDays">—</strong><small>Recorded study days</small></div></article>
+    <article class="stats-kpi kpi-purple"><span class="kpi-icon">↗</span><div><span>Daily Average</span><strong id="dailyAverage">—</strong><small>Across active days</small></div></article>
+    <article class="stats-kpi kpi-orange"><span class="kpi-icon">★</span><div><span>Best Day</span><strong id="bestDay">—</strong><small id="bestDayLabel">—</small></div></article>
+  </section>
+
+  <section class="stats-main-grid">
+    <article class="stats-card syllabus-card">
+      <div class="card-head"><div><p class="eyebrow">PROGRESS</p><h2>Study Overview</h2></div><span class="live-pill">LIVE</span></div>
+      <div class="overview-progress">
+        <div class="progress-ring" id="overviewRing"><span id="trackedPercent">0%</span></div>
+        <div class="overview-copy"><strong id="trackedSubjects">0</strong><span>subjects tracked</span><p id="overviewText">Start a subject timer to build your statistics.</p></div>
+      </div>
+      <div class="mini-metrics">
+        <div><span>Selected subjects</span><strong id="selectedSubjects">—</strong></div>
+        <div><span>Custom subjects</span><strong id="customSubjects">—</strong></div>
+        <div><span>Recorded sessions</span><strong id="sessionCount">—</strong></div>
+      </div>
+    </article>
+
+    <article class="stats-card countdown-card">
+      <div class="card-head"><div><p class="eyebrow">COUNTDOWN</p><h2>Exam & Revision</h2></div><a href="../index.html">Edit</a></div>
+      <div class="countdown-block"><span>Exam</span><strong id="examCountdown">—</strong><small id="examLabel">Set your course/group on Home</small></div>
+      <div class="countdown-divider"></div>
+      <div class="countdown-block"><span>Revision</span><strong id="revisionCountdown">—</strong><small id="revisionLabel">No revision countdown set</small></div>
+    </article>
+  </section>
+
+  <section class="stats-card">
+    <div class="card-head"><div><p class="eyebrow">SUBJECT PERFORMANCE</p><h2>Where your study time is going</h2></div><span class="muted-label">Time-based</span></div>
+    <div id="subjectPerformance" class="subject-performance"></div>
+  </section>
+
+  <section class="stats-two-col">
+    <article class="stats-card">
+      <div class="card-head"><div><p class="eyebrow">CONSISTENCY</p><h2>Last 28 Days</h2></div><span id="consistencyLabel" class="muted-label">0 active days</span></div>
+      <div id="heatmap" class="heatmap"></div>
+      <div class="heatmap-legend"><span>Less</span><i class="h0"></i><i class="h1"></i><i class="h2"></i><i class="h3"></i><i class="h4"></i><span>More</span></div>
+    </article>
+
+    <article class="stats-card">
+      <div class="card-head"><div><p class="eyebrow">THIS WEEK</p><h2>Target vs Actual</h2></div><span id="weekTotal" class="muted-label">—</span></div>
+      <div class="target-row"><div><span>Study hours</span><strong id="weekHours">—</strong></div><div class="target-track"><i id="weekBar"></i></div><b id="weekPct">—</b></div>
+      <div class="target-row"><div><span>Active days</span><strong id="weekDays">—</strong></div><div class="target-track"><i id="weekDayBar"></i></div><b id="weekDayPct">—</b></div>
+      <p class="target-note">Targets are based on your current tracker settings when available; no fake targets are inserted.</p>
+    </article>
+  </section>
+
+  <section class="stats-card">
+    <div class="card-head"><div><p class="eyebrow">WEEKLY TREND</p><h2>Last 7 Days</h2></div><span class="muted-label">Study time</span></div>
+    <div id="weeklyChart" class="weekly-chart"></div>
+  </section>
+
+  <section class="stats-two-col">
+    <article class="stats-card">
+      <div class="card-head"><div><p class="eyebrow">NEEDS ATTENTION</p><h2>Low-activity subjects</h2></div></div>
+      <div id="weakAreas" class="weak-areas"></div>
+    </article>
+    <article class="stats-card">
+      <div class="card-head"><div><p class="eyebrow">RECENT ACTIVITY</p><h2>Latest sessions</h2></div></div>
+      <div id="recentActivity" class="recent-activity"></div>
+    </article>
+  </section>
+
+  <section class="stats-card detailed-reports">
+    <div class="card-head"><div><p class="eyebrow">DETAILED REPORTS</p><h2>Day / Week / Month / Trend</h2></div></div>
+    <div class="report-tabs" role="tablist">
+      <button class="report-tab active" type="button" data-report-view="period">Period</button>
+      <button class="report-tab" type="button" data-report-view="day">Day</button>
+      <button class="report-tab" type="button" data-report-view="week">Week</button>
+      <button class="report-tab" type="button" data-report-view="month">Month</button>
+      <button class="report-tab" type="button" data-report-view="trend">Trend</button>
+    </div>
+    <div id="reportView" class="report-view" aria-live="polite"></div>
+  </section>
+</main>
+
+<script src="../js/academic.js?v=20261004f"></script>
+<script type="module" src="../js/statistics-page.js?v=20261005a"></script>
+<script type="module" src="../js/stats.js?v=20261004v5"></script>
+</body>
+</html>
