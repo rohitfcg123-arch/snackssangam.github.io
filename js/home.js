@@ -24,8 +24,8 @@ if (savedCountdowns.attemptDate && !state.attemptDate) state.attemptDate = saved
 if (savedCountdowns.revisionName && !state.revisionName) state.revisionName = savedCountdowns.revisionName;
 if (savedCountdowns.revisionDate && !state.revisionDate) state.revisionDate = savedCountdowns.revisionDate;
 const $ = id => document.getElementById(id);
-const level = $("levelSelect");
-const group = $("groupSelect");
+const level = null;
+const group = null;
 const subjects = null;
 const startStudy = $("startStudy");
 const electiveWrap = $("electiveWrap");
@@ -123,151 +123,7 @@ function groupLabel(key) {
   return "Foundation";
 }
 
-function renderElectiveOptions() {
-  if (!electiveWrap || !electiveSelect) return;
-
-  const show = level.value === "final" && group.value === "g4";
-  electiveWrap.classList.toggle("hidden", !show);
-
-  if (!show) {
-    electiveSelect.value = "";
-    return;
-  }
-
-  electiveSelect.innerHTML = '<option value="">Select elective</option>';
-  ACADEMIC.final.groups.electives.forEach((subject, index) => {
-    const option = document.createElement("option");
-    option.value = subject[0];
-    option.textContent = subject[0] + " — " + subject[1];
-    electiveSelect.appendChild(option);
-  });
-
-  electiveSelect.value = state.elective || "";
-}
-
-function groupOptions() {
-  group.innerHTML = '<option value="">Select group</option>';
-
-  if (!level.value || !ACADEMIC[level.value]) {
-    group.disabled = true;
-    return;
-  }
-
-  const data = ACADEMIC[level.value].groups;
-
-  Object.keys(data).filter(key => key !== "electives").forEach(key => {
-    const option = document.createElement("option");
-    option.value = key;
-    option.textContent = groupLabel(key);
-    group.appendChild(option);
-  });
-
-  if (level.value !== "foundation") {
-    const option = document.createElement("option");
-    option.value = "both";
-    option.textContent = "Both Groups";
-    group.appendChild(option);
-  }
-
-  group.disabled = false;
-  renderElectiveOptions();
-}
-
-function list() {
-  if (!level.value || !group.value || !ACADEMIC[level.value]) return [];
-
-  const data = ACADEMIC[level.value].groups;
-
-  if (group.value === "both") {
-    return ["g1", "g2", "g3", "g4"]
-      .filter(key => data[key])
-      .flatMap(key => data[key]);
-  }
-
-  const selected = data[group.value] || [];
-  if (level.value === "final" && group.value === "g4" && state.elective) {
-    const elective = data.electives.find(subject => subject[0] === state.elective);
-    return elective ? [...selected, elective] : selected;
-  }
-  return selected;
-}
-
-function render() {
-  if (!level || !group) return;
-  $("profileStatus").textContent = (!level.value || !group.value || !ACADEMIC[level.value])
-    ? "Select your level and group."
-    : ACADEMIC[level.value].label + " • " + group.options[group.selectedIndex].text + " selected.";
-}
-
-function automaticExamDate() {
-  if (!level.value || !group.value) return null;
-  if (level.value === "foundation") return EXAM_DATES.foundation;
-  return EXAM_DATES[level.value]?.[group.value] || null;
-}
-
-function syncExamDateToSelection() {
-  const date = automaticExamDate();
-  if (!date) return;
-
-  state.attemptDate = date;
-  // Only supply the automatic attempt name/date when the user has not already
-  // created a separate saved countdown.
-  if (!state.attemptName) state.attemptName = "December 2026 Attempt";
-  $("attemptName").value = state.attemptName;
-  $("attemptDate").value = date;
-  save();
-}
-
-level.onchange = () => {
-  groupOptions();
-  state.level = level.value;
-  state.group = "";
-  state.elective = "";
-  // Do NOT clear attempt/revision countdowns when academic selection changes.
-  save();
-  render();
-  updateStartStudyLink();
-  tick();
-};
-
-group.onchange = () => {
-  state.level = level.value;
-  state.group = group.value;
-  state.elective = "";
-  renderElectiveOptions();
-  syncExamDateToSelection();
-  save();
-  render();
-  updateStartStudyLink();
-  tick();
-};
-
-function updateStartStudyLink() {}
-if (electiveSelect) {
-  electiveSelect.onchange = () => {
-    state.elective = electiveSelect.value;
-    save();
-    render();
-    updateStartStudyLink();
-  };
-}
-
-// Academic selection is saved automatically on level/group/elective changes.
-const saveProfileButton = $("saveProfile");
-if (saveProfileButton) {
-  saveProfileButton.onclick = () => {
-    state.level = level.value;
-    state.group = group.value;
-    state.elective = electiveSelect?.value || "";
-    syncExamDateToSelection();
-    save();
-    $("profileStatus").textContent = "Selection saved on this device.";
-    updateStartStudyLink();
-    tick();
-  };
-}
-
-function countdownParts(date) {
+// Course selection has moved to pages/course.html. Home only reads the saved selection.\nfunction countdownParts(date) {
   if (!date) return null;
 
   const target = new Date(date + "T00:00:00").getTime();
@@ -400,3 +256,11 @@ setInterval(renderHomeActive,1000);
 
 $("quickRevision")?.addEventListener("click",()=>{$("editRevision")?.click();document.getElementById("revisionEditor")?.scrollIntoView({behavior:"smooth",block:"center"})});
 $("quickDaily")?.addEventListener("click",()=>{$("levelSelect")?.scrollIntoView({behavior:"smooth",block:"center"});$("levelSelect")?.focus()});
+
+/* Side drawer */
+const menuToggle=$("menuToggle"),menuClose=$("menuClose"),menuOverlay=$("menuOverlay"),sideMenu=$("sideMenu");
+function openMenu(){sideMenu?.classList.add("open");menuOverlay?.classList.remove("hidden");sideMenu?.setAttribute("aria-hidden","false");document.body.classList.add("menu-open")}
+function closeMenu(){sideMenu?.classList.remove("open");menuOverlay?.classList.add("hidden");sideMenu?.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open")}
+menuToggle?.addEventListener("click",openMenu);menuClose?.addEventListener("click",closeMenu);menuOverlay?.addEventListener("click",closeMenu);
+document.querySelectorAll("[data-menu]").forEach(a=>a.addEventListener("click",e=>{e.preventDefault();closeMenu();const key=a.dataset.menu;if(key==="settings")alert("Settings section is coming here. Course settings are available in Course.");else if(key==="students")alert("Student details will be available here.");else if(key==="revision")$("quickRevision")?.click();else if(key==="countdown")$("editAttempt")?.click();else alert("This section is ready for the next module.")}));
+$("menuLogout")?.addEventListener("click",e=>{e.preventDefault();performLogout()});
