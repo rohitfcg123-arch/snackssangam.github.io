@@ -12,7 +12,16 @@ import { auth } from "./firebase.js";
 import { onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const STORE = "cma_zone_home_v1";
+const COUNTDOWN_STORE = "cma_zone_countdowns_v2";
 const state = JSON.parse(localStorage.getItem(STORE) || "{}");
+const savedCountdowns = JSON.parse(localStorage.getItem(COUNTDOWN_STORE) || "{}");
+
+// Countdown data is intentionally independent from course/group selection.
+// Changing subjects must never erase a saved attempt or revision target.
+if (savedCountdowns.attemptName && !state.attemptName) state.attemptName = savedCountdowns.attemptName;
+if (savedCountdowns.attemptDate && !state.attemptDate) state.attemptDate = savedCountdowns.attemptDate;
+if (savedCountdowns.revisionName && !state.revisionName) state.revisionName = savedCountdowns.revisionName;
+if (savedCountdowns.revisionDate && !state.revisionDate) state.revisionDate = savedCountdowns.revisionDate;
 const $ = id => document.getElementById(id);
 const level = $("levelSelect");
 const group = $("groupSelect");
@@ -96,6 +105,12 @@ const EXAM_DATES = {
 
 function save() {
   localStorage.setItem(STORE, JSON.stringify(state));
+  localStorage.setItem(COUNTDOWN_STORE, JSON.stringify({
+    attemptName: state.attemptName || "",
+    attemptDate: state.attemptDate || "",
+    revisionName: state.revisionName || "",
+    revisionDate: state.revisionDate || ""
+  }));
 }
 
 function groupLabel(key) {
@@ -212,7 +227,9 @@ function syncExamDateToSelection() {
   if (!date) return;
 
   state.attemptDate = date;
-  state.attemptName = "December 2026 Attempt";
+  // Only supply the automatic attempt name/date when the user has not already
+  // created a separate saved countdown.
+  if (!state.attemptName) state.attemptName = "December 2026 Attempt";
   $("attemptName").value = state.attemptName;
   $("attemptDate").value = date;
   save();
@@ -223,8 +240,7 @@ level.onchange = () => {
   state.level = level.value;
   state.group = "";
   state.elective = "";
-  state.attemptDate = "";
-  state.attemptName = "";
+  // Do NOT clear attempt/revision countdowns when academic selection changes.
   save();
   render();
   updateStartStudyLink();
@@ -326,8 +342,14 @@ $("editAttempt").onclick = () => {
 };
 
 $("saveAttempt").onclick = () => {
-  state.attemptName = $("attemptName").value.trim() || "Attempt";
-  state.attemptDate = $("attemptDate").value;
+  const name = $("attemptName").value.trim();
+  const date = $("attemptDate").value;
+  if (!date) {
+    $("attemptDate").focus();
+    return;
+  }
+  state.attemptName = name || "Attempt";
+  state.attemptDate = date;
   save();
   $("attemptEditor").classList.add("hidden");
   tick();
@@ -339,8 +361,14 @@ $("editRevision").onclick = () => {
 };
 
 $("saveRevision").onclick = () => {
-  state.revisionName = $("revisionNameInput").value.trim() || "Revision";
-  state.revisionDate = $("revisionDate").value;
+  const name = $("revisionNameInput").value.trim();
+  const date = $("revisionDate").value;
+  if (!date) {
+    $("revisionDate").focus();
+    return;
+  }
+  state.revisionName = name || "Revision";
+  state.revisionDate = date;
 
   save();
 
