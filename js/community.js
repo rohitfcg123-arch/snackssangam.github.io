@@ -6,7 +6,7 @@ EDITABLE AREAS: Message limit and collection name.
 DEPENDENCIES: firebase.js, Firebase Authentication and Cloud Firestore.
 */
 import {auth,db} from "./firebase.js";
-import {onAuthStateChanged} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import {onAuthStateChanged,signOut} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {collection,addDoc,deleteDoc,doc,query,orderBy,onSnapshot,serverTimestamp,limit} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 const $=id=>document.getElementById(id);
@@ -62,3 +62,5 @@ onAuthStateChanged(auth,user=>{
  $("messageInput").disabled=!user;$("sendMessage").disabled=!user;
  startListener();
 });
+
+$("communityLogout")?.addEventListener("click",async()=>{try{await signOut(auth);window.location.href="../pages/signin.html"}catch(e){console.error(e);alert("Logout failed: "+(e.code||e.message||"Unknown error"))}});
