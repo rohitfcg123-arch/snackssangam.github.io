@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
 <meta name="theme-color" content="#14213D"><title>CMA Zone — Home</title>
-<link rel="stylesheet" href="css/variables.css"><link rel="stylesheet" href="css/base.css"><link rel="stylesheet" href="css/home.css?v=20261005menu1">
+<link rel="stylesheet" href="css/variables.css"><link rel="stylesheet" href="css/base.css"><link rel="stylesheet" href="css/home.css?v=20261005menu3">
 </head>
 <body>
 <header class="app-header home-header">
@@ -12,67 +12,22 @@
 <div class="header-auth"><a class="login-button" id="loginButton" href="pages/signin.html">Login</a><button class="logout-button hidden" id="headerLogout" type="button">Logout</button></div>
 </header>
 <div class="menu-overlay hidden" id="menuOverlay"></div><aside class="side-menu" id="sideMenu" aria-hidden="true"><div class="side-menu-head"><div class="brand"><span class="brand-mark">C</span><div><strong>CMA Zone</strong><span class="brand-subtitle">CMA Preparation</span></div></div><button id="menuClose" type="button">×</button></div><nav class="side-menu-nav">
-<a href="#" data-menu="students">👥 <span>Students Details</span><b>›</b></a>
-<a href="pages/course.html">📚 <span>Course</span><b>›</b></a>
-<a href="pages/study.html">📖 <span>Subjects</span><b>›</b></a>
-<a href="pages/study-plan.html">▣ <span>Study Plan</span><b>›</b></a>
-<a href="#" data-menu="revision">⟳ <span>Revision</span><b>›</b></a>
-<a href="pages/pyqs.html">▧ <span>PYQs</span><b>›</b></a>
-<a href="pages/mock-tests.html">☑ <span>Mock Tests</span><b>›</b></a>
-<a href="pages/statistics.html">▥ <span>Statistics</span><b>›</b></a>
-<a href="#" data-menu="countdown">◷ <span>Exam Countdown</span><b>›</b></a>
-<a href="#" data-menu="notes">▤ <span>Notes</span><b>›</b></a>
-<a href="#" data-menu="bookmarks">🔖 <span>Bookmarks</span><b>›</b></a>
-<a href="#" data-menu="settings">⚙ <span>Settings</span><b>›</b></a>
-<a href="#" data-menu="help">? <span>Help & Support</span><b>›</b></a>
-<a href="#" id="menuLogout" class="menu-logout">↪ <span>Logout</span></a>
+<a href="#" data-menu="students">👥 <span>Students Details</span><b>›</b></a><a href="pages/course.html">📚 <span>Course</span><b>›</b></a><a href="pages/study.html">📖 <span>Subjects</span><b>›</b></a><a href="pages/study-plan.html">▣ <span>Study Plan</span><b>›</b></a><a href="#" data-menu="revision">⟳ <span>Revision</span><b>›</b></a><a href="pages/pyqs.html">▧ <span>PYQs</span><b>›</b></a><a href="pages/mock-tests.html">☑ <span>Mock Tests</span><b>›</b></a><a href="pages/statistics.html">▥ <span>Statistics</span><b>›</b></a><a href="#" data-menu="countdown">◷ <span>Exam Countdown</span><b>›</b></a><a href="#" data-menu="notes">▤ <span>Notes</span><b>›</b></a><a href="#" data-menu="bookmarks">🔖 <span>Bookmarks</span><b>›</b></a><a href="#" data-menu="settings">⚙ <span>Settings</span><b>›</b></a><a href="#" data-menu="help">? <span>Help & Support</span><b>›</b></a><a href="#" id="menuLogout" class="menu-logout">↪ <span>Logout</span></a>
 </nav></aside><main class="home-page">
-<section class="greeting-card hidden" id="greetingCard" aria-live="polite"><div><p class="greeting-title" id="greetingTitle">Hi 👋</p><p class="greeting-quote" id="greetingQuote"></p></div><button class="text-button greeting-logout" id="logoutButton" type="button">Logout</button></section>
+<section class="greeting-card hidden" id="greetingCard" aria-live="polite"><div class="greeting-main"><p class="greeting-title" id="greetingTitle">Hi 👋</p><p class="greeting-quote" id="greetingQuote"></p><div class="home-course-summary" id="homeCourseSummary"><span id="homeCourseText">Course not saved</span><span id="homeAttemptText">Select exam attempt</span><strong id="homeExamCountdown">—</strong><small id="homeExamDate">Open Course to set your exam.</small></div></div><button class="text-button greeting-logout" id="logoutButton" type="button">Logout</button></section>
 <section class="study-launch-panel panel"><div class="study-launch-top"><div><p class="eyebrow">STUDY TRACKER</p><h2>Ready to study?</h2><p class="study-launch-note">Choose what you are studying and start your timer without leaving the Home page.</p></div></div><button class="start-study-home" id="startStudy" type="button"><span class="start-study-icon">▶</span><span><strong>Start Study</strong><small>Select a subject to begin</small></span><span class="start-study-chevron">⌄</span></button><div id="homeActiveStudy" class="home-active-study hidden"><div class="active-study-head"><span class="live-pill"><i></i> Studying Now</span><button id="activeStudyClose" type="button" aria-label="Collapse timer">⌃</button></div><div class="active-study-subject" id="activeStudySubject">—</div><div class="active-study-timer" id="activeStudyTimer">00:00:00</div><div class="active-study-meta"><span id="activeStudyStarted">Started just now</span><span id="activeStudyToday">Today</span></div><div class="active-study-actions"><button class="pause-study" id="pauseStudy" type="button">Ⅱ Pause</button><button class="stop-study" id="stopStudy" type="button">■ Complete</button></div></div></section><section class="hero-card"><div><p class="eyebrow">MY CMA ZONE</p><h1>Prepare smarter. Track everything.</h1><p class="hero-text">Choose a subject, start studying and track every focused session.</p></div><div class="hero-actions"><a class="secondary-button primary-link statistics-home-button" href="pages/statistics.html">Statistics</a></div></section>
-<section class="quick-actions">
-<a class="quick-action quick-blue" href="pages/statistics.html"><span>▥</span><div><strong>Statistics</strong><small>View progress & reports</small></div><b>›</b></a>
-<a class="quick-action quick-purple" href="pages/study.html"><span>▤</span><div><strong>Subjects</strong><small>Manage subjects & topics</small></div><b>›</b></a>
-<button class="quick-action quick-orange" type="button" id="quickRevision"><span>⟳</span><div><strong>Revision</strong><small>Track revision</small></div><b>›</b></button>
-<button class="quick-action quick-green" type="button" id="quickDaily"><span>▣</span><div><strong>Daily Plan</strong><small>Today's targets</small></div><b>›</b></button>
-</section>
-
-<section class="panel">
-<div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div>
-<div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div>
-<div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div>
-</section>
-
-
+<section class="quick-actions"><a class="quick-action quick-blue" href="pages/statistics.html"><span>▥</span><div><strong>Statistics</strong><small>View progress & reports</small></div><b>›</b></a><a class="quick-action quick-purple" href="pages/study.html"><span>▤</span><div><strong>Subjects</strong><small>Manage subjects & topics</small></div><b>›</b></a><button class="quick-action quick-orange" type="button" id="quickRevision"><span>⟳</span><div><strong>Revision</strong><small>Track revision</small></div><b>›</b></button><button class="quick-action quick-green" type="button" id="quickDaily"><span>▣</span><div><strong>Daily Plan</strong><small>Today's targets</small></div><b>›</b></button></section>
+<section class="panel"><div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div><div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div><div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div></section>
 </main><div class="study-subject-modal hidden" id="studySubjectModal" role="dialog" aria-modal="true" aria-labelledby="studySubjectTitle"><div class="study-subject-sheet"><div class="study-sheet-head"><div><p class="eyebrow">START STUDY</p><h2 id="studySubjectTitle">Choose subject to start</h2></div><button id="closeStudySubject" type="button" aria-label="Close">×</button></div><div id="homeStudySubjectList" class="home-study-subject-list"></div></div></div>
 <script src="js/academic.js?v=20261004f"></script>
 <script>
-document.addEventListener("DOMContentLoaded",function(){
-  const b=document.getElementById("menuToggle"),m=document.getElementById("sideMenu"),o=document.getElementById("menuOverlay"),x=document.getElementById("menuClose");
-  function open(){if(m)m.classList.add("open");if(o)o.classList.remove("hidden");if(m)m.setAttribute("aria-hidden","false");document.body.classList.add("menu-open");}
-  function close(){if(m)m.classList.remove("open");if(o)o.classList.add("hidden");if(m)m.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open");}
-  if(b)b.onclick=open;if(x)x.onclick=close;if(o)o.onclick=close;
-});
+document.addEventListener("DOMContentLoaded",function(){const b=document.getElementById("menuToggle"),m=document.getElementById("sideMenu"),o=document.getElementById("menuOverlay"),x=document.getElementById("menuClose");function open(){m?.classList.add("open");o?.classList.remove("hidden");m?.setAttribute("aria-hidden","false");document.body.classList.add("menu-open")}function close(){m?.classList.remove("open");o?.classList.add("hidden");m?.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open")}b?.addEventListener("click",open);x?.addEventListener("click",close);o?.addEventListener("click",close)});
 </script>
-<script type="module" src="js/home.js?v=20261005menu2"></script>
+<script type="module" src="js/home.js?v=20261005menu3"></script>
 <script type="module">
 import { auth } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-onAuthStateChanged(auth, user => {
-  const login=document.getElementById("loginButton");
-  const logout=document.getElementById("headerLogout");
-  const card=document.getElementById("greetingCard");
-  const title=document.getElementById("greetingTitle");
-  const quote=document.getElementById("greetingQuote");
-  if(user){
-    if(login) login.classList.add("hidden");
-    if(logout) logout.classList.remove("hidden");
-    if(card) card.classList.remove("hidden");
-    if(title) title.textContent="Hi "+((user.displayName||user.email||"Student").split(/\\s+/)[0])+" 👋";
-    if(quote) quote.textContent="Your consistency today builds your confidence tomorrow.";
-  } else {
-    if(login) login.classList.remove("hidden");
-    if(logout) logout.classList.add("hidden");
-  }
-});
+function renderSavedSetup(){const s=JSON.parse(localStorage.getItem("cma_zone_home_v1")||"{}"),map={foundation:"Foundation",g1:"Group 1",g2:"Group 2",g3:"Group 3",g4:"Group 4",both:"Both Groups"};const c=document.getElementById("homeCourseText"),a=document.getElementById("homeAttemptText"),cd=document.getElementById("homeExamCountdown"),dt=document.getElementById("homeExamDate");if(!c)return;c.textContent=s.level&&ACADEMIC[s.level]?(ACADEMIC[s.level].label||"Course")+" • "+(map[s.group]||"Group not selected"):"Course not saved";a.textContent=s.attemptName||"Select exam attempt";if(s.attemptDate){const target=new Date(s.attemptDate+"T00:00:00").getTime(),diff=Math.max(0,target-Date.now()),days=Math.floor(diff/86400000),hours=Math.floor(diff%86400000/3600000),mins=Math.floor(diff%3600000/60000),secs=Math.floor(diff%60000/1000);cd.textContent=days+"d "+hours+"h "+mins+"m "+secs+"s";dt.textContent="Exam starts: "+new Date(s.attemptDate+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}else{cd.textContent="—";dt.textContent="Open Course to set your exam."}}
+onAuthStateChanged(auth,user=>{const login=document.getElementById("loginButton"),logout=document.getElementById("headerLogout"),card=document.getElementById("greetingCard"),title=document.getElementById("greetingTitle"),quote=document.getElementById("greetingQuote");if(user){login?.classList.add("hidden");logout?.classList.remove("hidden");card?.classList.remove("hidden");title.textContent="Hi "+((user.displayName||user.email||"Student").split(/\s+/)[0])+" 👋";quote.textContent="Your consistency today builds your confidence tomorrow.";renderSavedSetup();setInterval(renderSavedSetup,1000)}else{login?.classList.remove("hidden");logout?.classList.add("hidden")}});renderSavedSetup();
 </script>
 </body></html>
