@@ -23,7 +23,31 @@
 <script>
 document.addEventListener("DOMContentLoaded",function(){const b=document.getElementById("menuToggle"),m=document.getElementById("sideMenu"),o=document.getElementById("menuOverlay"),x=document.getElementById("menuClose");function open(){m?.classList.add("open");o?.classList.remove("hidden");m?.setAttribute("aria-hidden","false");document.body.classList.add("menu-open")}function close(){m?.classList.remove("open");o?.classList.add("hidden");m?.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open")}b?.addEventListener("click",open);x?.addEventListener("click",close);o?.addEventListener("click",close)});
 </script>
-<script type="module" src="js/home.js?v=20261005studyfix1"></script>
+<script type="module" src="js/home.js?v=20261005logoutfix2"></script>
+<script type="module">
+import { auth } from "./js/firebase.js";
+import { signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+(function(){
+  async function forceLogout(e){
+    e?.preventDefault(); e?.stopImmediatePropagation();
+    const buttons=[document.getElementById("logoutButton"),document.getElementById("headerLogout"),document.getElementById("menuLogout")].filter(Boolean);
+    buttons.forEach(b=>{b.disabled=true;b.style.pointerEvents="none"});
+    try{
+      await signOut(auth);
+      try{localStorage.removeItem("cma_zone_home_v1");}catch{}
+      window.location.href="./pages/signin.html?logout=1";
+    }catch(err){
+      console.error("FORCE LOGOUT ERROR",err);
+      buttons.forEach(b=>{b.disabled=false;b.style.pointerEvents=""});
+      alert("Logout failed: "+(err?.code||err?.message||"Unknown error"));
+    }
+  }
+  document.addEventListener("click",function(e){
+    const t=e.target?.closest?.("#logoutButton,#headerLogout,#menuLogout");
+    if(t) forceLogout(e);
+  },true);
+})();
+</script>
 <script type="module">
 import { auth } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
