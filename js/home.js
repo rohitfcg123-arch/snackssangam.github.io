@@ -5,7 +5,7 @@ PURPOSE: Academic selection, automatic exam countdown, and independent revision 
 EDITABLE AREAS: Storage key and official exam schedule.
 DEPENDENCIES: index.html, css/home.css, js/academic.js, browser localStorage.
 IMPORTANT NOTES: Subjects come only from js/academic.js. Exam countdown uses the December 2026 ICMAI schedule and the first exam date applicable to the selected course/group.
-LAST UPDATED: 2026-10-04
+LAST UPDATED: 2026-10-05
 */
 
 import { auth, db } from "./firebase.js";
@@ -210,8 +210,8 @@ $("saveRevision")?.addEventListener("click", () => {
 };
 
 
-if (state.attemptName) $("attemptName").value = state.attemptName;
-if (state.attemptDate) $("attemptDate").value = state.attemptDate;
+if (state.attemptName && $("attemptName")) $("attemptName").value = state.attemptName;
+if (state.attemptDate && $("attemptDate")) $("attemptDate").value = state.attemptDate;
 
 if (state.revisionName) {
   $("revisionName").textContent = state.revisionName;
