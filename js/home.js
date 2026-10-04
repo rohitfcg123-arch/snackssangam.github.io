@@ -152,9 +152,9 @@ function countdownHTML(parts) {
 function tick() {
   const attemptParts = countdownParts(state.attemptDate);
 
-  $("attemptCountdown").innerHTML = countdownHTML(attemptParts);
+  $("attemptCountdown")?.replaceChildren(); if ($("attemptCountdown")) $("attemptCountdown").innerHTML = countdownHTML(attemptParts);
 
-  $("attemptDateLabel").textContent =
+  if ($("attemptDateLabel")) $("attemptDateLabel").textContent =
     state.attemptDate
       ? (state.attemptName || "December 2026 Attempt") +
         " • First exam: " + state.attemptDate
@@ -162,14 +162,14 @@ function tick() {
 
   const revisionParts = countdownParts(state.revisionDate);
 
-  $("revisionCountdown").innerHTML = countdownHTML(revisionParts);
+  if ($("revisionCountdown")) $("revisionCountdown").innerHTML = countdownHTML(revisionParts);
 }
 
-$("editAttempt").onclick = () => {
+$("editAttempt")?.addEventListener("click", () => {
   $("attemptEditor").classList.toggle("hidden");
-};
+});
 
-$("saveAttempt").onclick = () => {
+$("saveAttempt")?.addEventListener("click", () => {
   const name = $("attemptName").value.trim();
   const date = $("attemptDate").value;
   if (!date) {
@@ -181,14 +181,14 @@ $("saveAttempt").onclick = () => {
   save();
   $("attemptEditor").classList.add("hidden");
   tick();
-};
+});
 
-$("editRevision").onclick = () => {
+$("editRevision")?.addEventListener("click", () => {
   $("revisionEditor").classList.toggle("hidden");
   $("revisionEmpty").classList.toggle("hidden", false);
-};
+});
 
-$("saveRevision").onclick = () => {
+$("saveRevision")?.addEventListener("click", () => {
   const name = $("revisionNameInput").value.trim();
   const date = $("revisionDate").value;
   if (!date) {
@@ -209,13 +209,6 @@ $("saveRevision").onclick = () => {
   tick();
 };
 
-if (state.level && ACADEMIC[state.level]) {
-  level.value = state.level;
-  groupOptions();
-  group.value = state.group || "";
-  renderElectiveOptions();
-  render();
-}
 
 if (state.attemptName) $("attemptName").value = state.attemptName;
 if (state.attemptDate) $("attemptDate").value = state.attemptDate;
@@ -228,7 +221,7 @@ if (state.revisionName) {
 }
 
 
-updateStartStudyLink();
+// Course setup is handled on pages/course.html.
 tick();
 setInterval(tick, 1000);
 
