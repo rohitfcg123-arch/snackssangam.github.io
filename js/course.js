@@ -4,7 +4,7 @@ REFERENCE: CMA-ZONE-COURSE-V4
 PURPOSE: Course/group/attempt selection, explicit save, and custom-subject management.
 EDITABLE AREAS: Storage keys, labels and exam-attempt year range.
 DEPENDENCIES: academic.js, firebase.js, Firestore users/{uid}/studyDays/config.
-IMPORTANT: Firestore document ID "config" is used because "__config__" is reserved.
+IMPORTANT: Firestore document ID "config" is used because "config" is reserved.
 */
 
 import { auth, db } from "./firebase.js";
