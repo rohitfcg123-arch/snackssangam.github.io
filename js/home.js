@@ -14,15 +14,21 @@ import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.19.0/
 
 const STORE = "cma_zone_home_v1";
 const COUNTDOWN_STORE = "cma_zone_countdowns_v2";
-const state = JSON.parse(localStorage.getItem(STORE) || "{}");
-const savedCountdowns = JSON.parse(localStorage.getItem(COUNTDOWN_STORE) || "{}");
+let state = {};
+let cloudReady = false;
+let cloudUserId = "";
 
-// Countdown data is intentionally independent from course/group selection.
-// Changing subjects must never erase a saved attempt or revision target.
-if (savedCountdowns.attemptName && !state.attemptName) state.attemptName = savedCountdowns.attemptName;
-if (savedCountdowns.attemptDate && !state.attemptDate) state.attemptDate = savedCountdowns.attemptDate;
-if (savedCountdowns.revisionName && !state.revisionName) state.revisionName = savedCountdowns.revisionName;
-if (savedCountdowns.revisionDate && !state.revisionDate) state.revisionDate = savedCountdowns.revisionDate;
+function writeLocalCache(){
+  try{
+    localStorage.setItem(STORE, JSON.stringify(state));
+    localStorage.setItem(COUNTDOWN_STORE, JSON.stringify({
+      attemptName: state.attemptName || "",
+      attemptDate: state.attemptDate || "",
+      revisionName: state.revisionName || "",
+      revisionDate: state.revisionDate || ""
+    }));
+  }catch(e){}
+}
 const $ = id => document.getElementById(id);
 const level = null;
 const group = null;
@@ -131,11 +137,28 @@ async function saveCloudState() {
   } catch(e){ console.error("Cloud setup save failed:",e); }
 }
 async function loadCloudState(user) {
-  if (!user) return;
+  if (!user) return false;
+  cloudReady = false;
+  cloudUserId = user.uid;
   try {
     const snap=await getDoc(doc(db,"users",user.uid,"studyDays","config"));
-    if (!snap.exists()) return;
+    if (!snap.exists()) {
+      state = {};
+      cloudReady = true;
+      return true;
+    }
     const d=snap.data()||{};
+    state = {
+      level: d.courseLevel || "",
+      group: d.group || "",
+      elective: d.elective || "",
+      attemptMonth: d.attemptMonth || "",
+      attemptYear: d.attemptYear ? Number(d.attemptYear) : 0,
+      attemptName: d.attemptName || "",
+      attemptDate: d.attemptDate || "",
+      revisionName: d.revisionName || "",
+      revisionDate: d.revisionDate || ""
+    };
     if(d.courseLevel) state.level=d.courseLevel;
     if(d.group) state.group=d.group;
     if(d.elective!==undefined) state.elective=d.elective;
@@ -147,17 +170,14 @@ async function loadCloudState(user) {
     if(d.revisionDate) state.revisionDate=d.revisionDate;
     localStorage.setItem(STORE,JSON.stringify(state));
     localStorage.setItem(COUNTDOWN_STORE,JSON.stringify({attemptName:state.attemptName||"",attemptDate:state.attemptDate||"",revisionName:state.revisionName||"",revisionDate:state.revisionDate||""}));
-  } catch(e){ console.error("Cloud setup load failed:",e); }
+  } catch(e){ console.error("Cloud setup load failed:",e); cloudReady = false; return false; }
 }
 function save() {
-  localStorage.setItem(STORE, JSON.stringify(state));
-  localStorage.setItem(COUNTDOWN_STORE, JSON.stringify({
-    attemptName: state.attemptName || "",
-    attemptDate: state.attemptDate || "",
-    revisionName: state.revisionName || "",
-    revisionDate: state.revisionDate || ""
-  }));
-  void saveCloudState();
+  if (!cloudReady || !auth.currentUser || cloudUserId !== auth.currentUser.uid) {
+    console.warn("Cloud is not ready; refusing to treat localStorage as source of truth.");
+    return;
+  }
+  void saveCloudState().then(writeLocalCache);
 }
 
 function groupLabel(key) {
@@ -195,7 +215,27 @@ function countdownHTML(parts) {
     '</div>';
 }
 
+function renderCloudCourseSummary(){
+  const courseEl=$("homeCourseText"), attemptEl=$("homeAttemptText"), countEl=$("homeExamCountdown"), dateEl=$("homeExamDate");
+  if(!courseEl || !attemptEl || !countEl || !dateEl) return;
+  if(!cloudReady){
+    courseEl.textContent="Loading cloud data…";
+    attemptEl.textContent="Loading exam attempt…";
+    countEl.textContent="—";
+    dateEl.textContent="Syncing with Firebase…";
+    return;
+  }
+  const levelNames={foundation:"Foundation",inter:"Intermediate",final:"Final"};
+  const groupNames={g1:"Group 1",g2:"Group 2",g3:"Group 3",g4:"Group 4",both:"Both Groups"};
+  courseEl.textContent=state.level ? (levelNames[state.level] || state.level) + (state.group ? " • " + (groupNames[state.group] || state.group) : "") : "Course not saved";
+  attemptEl.textContent=state.attemptName || "Select exam attempt";
+  const parts=countdownParts(state.attemptDate);
+  countEl.innerHTML=countdownHTML(parts);
+  dateEl.textContent=state.attemptDate ? "Exam date: " + state.attemptDate : "Open Course to set your exam.";
+}
+
 function tick() {
+  renderCloudCourseSummary();
   const attemptParts = countdownParts(state.attemptDate);
 
   $("attemptCountdown")?.replaceChildren(); if ($("attemptCountdown")) $("attemptCountdown").innerHTML = countdownHTML(attemptParts);
@@ -298,7 +338,23 @@ async function homeStop(){if(!homeStudyState.active)return;const a=homeStudyStat
 function renderHomeActive(){const c=$("homeActiveStudy"),b=$("startStudy");if(!c||!b)return;if(!homeStudyState.active){c.classList.add("hidden");b.classList.remove("hidden");return}c.classList.remove("hidden");b.classList.add("hidden");$("activeStudySubject").textContent=homeSubjectName(homeStudyState.active.subjectId);$("activeStudyTimer").textContent=homeFormat(homeElapsed());$("activeStudyStarted").textContent="Started "+new Date(homeStudyState.active.startedAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});$("activeStudyToday").textContent="Today • "+homeFormat(Object.values(homeStudyState.totals).reduce((a,v)=>a+Number(v||0),0)+homeElapsed())+" total"}
 async function homeAddCustom(){const n=prompt("Enter custom subject name");if(!n?.trim()||!homeStudyUser)return;const name=n.trim();if(homeCustomSubjects.some(x=>x[1].toLowerCase()===name.toLowerCase())){alert("This subject is already added.");return}homeCustomSubjects.push(["custom_"+Date.now(),name,"custom"]);try{localStorage.setItem(homeCacheKey(),JSON.stringify(homeCustomSubjects));await setDoc(homeConfigRef(),{customSubjects:homeCustomSubjects,updatedAt:Date.now()},{merge:true})}catch(e){console.error(e)}renderHomeChoices()}
 $("startStudy")?.addEventListener("click",e=>{e.preventDefault();e.stopPropagation();openChooser();});$("closeStudySubject")?.addEventListener("click",closeChooser);$("studySubjectModal")?.addEventListener("click",e=>{if(e.target.id==="studySubjectModal")closeChooser()});$("stopStudy")?.addEventListener("click",homeStop);
-onAuthStateChanged(auth,async user=>{homeStudyUser=user;if(user){await loadCloudState(user);await homeLoadStudy();renderHomeActive();tick()}else{homeStudyState={totals:{},sessions:[],active:null};renderHomeActive()}});
+onAuthStateChanged(auth,async user=>{
+  homeStudyUser=user;
+  if(user){
+    await loadCloudState(user);
+    renderCloudCourseSummary();
+    await homeLoadStudy();
+    renderHomeActive();
+    tick();
+  }else{
+    cloudReady=false;
+    cloudUserId="";
+    state={};
+    homeStudyState={totals:{},sessions:[],active:null};
+    renderCloudCourseSummary();
+    renderHomeActive();
+  }
+});
 setInterval(renderHomeActive,1000);
 
 
