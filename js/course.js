@@ -29,7 +29,7 @@ function render(){renderLevels();renderAttempt();renderGroups();renderElective()
 $("attemptMonth")?.addEventListener("change",()=>{state.attemptMonth=$("attemptMonth").value;syncExamDate();renderAttempt()});
 $("attemptYear")?.addEventListener("change",()=>{state.attemptYear=Number($("attemptYear").value);syncExamDate();renderAttempt()});
 $("electiveCourse")?.addEventListener("change",()=>{state.elective=$("electiveCourse").value;saveState();render()});
-$("addCustomCourse").onclick=addCustom;
-$("saveCourse")?.addEventListener("click",saveCourseSetup);
+$("addCustomCourse")?.addEventListener("click",addCustom);
+$("saveCourse")?.addEventListener("click",saveCourseSetup);$("saveCourseQuick")?.addEventListener("click",saveCourseSetup);
 loadState();
 onAuthStateChanged(auth,async u=>{user=u;await loadCustom();render()});
