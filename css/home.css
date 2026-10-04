@@ -239,3 +239,22 @@ LAST UPDATED: 2026-10-04
 .active-study-timer{font-size:40px}
 @media(max-width:720px){.quick-actions{grid-template-columns:1fr 1fr}.hero-card{padding:22px 18px}.hero-card h1{font-size:30px}}
 @media(max-width:480px){.home-page{width:min(100% - 20px,920px)}.quick-actions{gap:8px}.quick-action{grid-template-columns:36px 1fr 14px;padding:10px 8px}.quick-action>span{width:36px;height:36px;font-size:18px}.quick-action strong{font-size:12px}.quick-action small{font-size:9px}.quick-action>b{font-size:18px}.study-launch-panel{padding:16px}.study-launch-panel h2{font-size:24px}.study-subject-sheet{padding:18px 14px}}
+
+/* SIDE DRAWER / HEADER MENU */
+.home-header{position:relative;display:flex;align-items:center;gap:10px}
+.menu-toggle{width:42px;height:42px;flex:0 0 42px;border:1px solid rgba(255,255,255,.2);border-radius:12px;background:rgba(255,255,255,.07);color:#fff;font-size:24px;line-height:1;cursor:pointer;display:grid;place-items:center}
+.menu-toggle:hover{background:rgba(255,255,255,.14)}
+.menu-overlay{position:fixed;inset:0;z-index:2998;background:rgba(5,18,38,.55);backdrop-filter:blur(2px)}
+.menu-overlay.hidden{display:none}
+.side-menu{position:fixed;z-index:2999;left:0;top:0;bottom:0;width:min(88vw,370px);padding:18px 14px 20px;background:#fff;box-shadow:20px 0 55px rgba(0,0,0,.2);transform:translateX(-105%);transition:transform .24s ease;overflow:auto}
+.side-menu.open{transform:translateX(0)}
+.side-menu-head{display:flex;align-items:center;justify-content:space-between;padding:4px 6px 16px;border-bottom:1px solid #e7ebf2}
+.side-menu-head .brand{display:flex}.side-menu-head .brand-mark{background:#1768ef}
+.side-menu-head>button{width:38px;height:38px;border:0;border-radius:50%;background:#f0f4fa;color:#12233f;font-size:26px;cursor:pointer}
+.side-menu-nav{display:grid;gap:3px;padding-top:10px}
+.side-menu-nav a{display:grid;grid-template-columns:30px 1fr 18px;align-items:center;gap:8px;min-height:49px;padding:0 10px;border-radius:12px;color:#14213d;text-decoration:none;font-size:14px;font-weight:600}
+.side-menu-nav a:hover{background:#f2f6fc;color:#1768ef}
+.side-menu-nav a b{font-size:21px;color:#8b97a9;text-align:right}
+.side-menu-nav .menu-logout{margin-top:8px;border-top:1px solid #e7ebf2;border-radius:0;color:#e94459;padding-top:9px}
+body.menu-open{overflow:hidden}
+@media(max-width:480px){.menu-toggle{width:40px;height:40px;flex-basis:40px}.home-header .brand strong{font-size:16px}.home-header .brand-subtitle{font-size:10px}}
