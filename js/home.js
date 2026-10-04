@@ -123,7 +123,8 @@ function groupLabel(key) {
   return "Foundation";
 }
 
-// Course selection has moved to pages/course.html. Home only reads the saved selection.\nfunction countdownParts(date) {
+// Course selection has moved to pages/course.html. Home only reads the saved selection.
+function countdownParts(date) {
   if (!date) return null;
 
   const target = new Date(date + "T00:00:00").getTime();
