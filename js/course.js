@@ -115,6 +115,31 @@ function names() {
    LOAD CUSTOM SUBJECTS
 ----------------------------- */
 
+async function loadCloudCourse() {
+  if (!user) return;
+  try {
+    const snap = await getDoc(configRef());
+    if (!snap.exists()) return;
+    const remote = snap.data();
+    if (remote.courseLevel) state.level = remote.courseLevel;
+    if (remote.group) state.group = remote.group;
+    if (remote.elective !== undefined) state.elective = remote.elective || "";
+    if (remote.attemptMonth) state.attemptMonth = remote.attemptMonth;
+    if (remote.attemptYear) state.attemptYear = Number(remote.attemptYear);
+    if (remote.attemptName) state.attemptName = remote.attemptName;
+    if (remote.attemptDate) state.attemptDate = remote.attemptDate;
+    if (Array.isArray(remote.customSubjects)) {
+      custom = remote.customSubjects
+        .filter(item => Array.isArray(item) && item.length >= 2)
+        .map(item => [String(item[0]), String(item[1]), "custom"]);
+      localStorage.setItem(customStorageKey(), JSON.stringify(custom));
+    }
+    saveState();
+  } catch (error) {
+    console.error("Cloud course load failed:", error);
+  }
+}
+
 async function loadCustom() {
   if (!user) return;
 
