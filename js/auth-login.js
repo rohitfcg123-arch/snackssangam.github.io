@@ -18,8 +18,7 @@ import {
   setPersistence,
   browserLocalPersistence,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult
+  signInWithPopup
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 
 const loginForm = document.getElementById("loginForm");
@@ -75,31 +74,19 @@ document.getElementById("googleLogin")?.addEventListener("click", async () => {
     await setPersistence(auth, browserLocalPersistence);
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: "select_account" });
-    await signInWithRedirect(auth, provider);
+    const result = await signInWithPopup(auth, provider);
+    if (!result?.user) throw new Error("Google sign-in did not return a Firebase user.");
+    await new Promise(resolve => {
+      const unsubscribe = onAuthStateChanged(auth, user => {
+        if (user) { unsubscribe(); resolve(user); }
+      });
+      setTimeout(() => { unsubscribe(); resolve(result.user); }, 3000);
+    });
+    window.location.replace(new URL("../index.html", window.location.href).href);
   } catch (error) {
     showMessage(firebaseMessage(error), "error");
   }
 });
-
-// When Google redirects back to this page, Firebase completes the sign-in here.
-// This is more reliable on Android/Chrome than a popup flow.
-(async function finishGoogleRedirect() {
-  try {
-    const result = await getRedirectResult(auth);
-    if (result?.user) {
-      showMessage("Login successful. Opening CMA Zone…", "success");
-      await new Promise((resolve, reject) => {
-        const unsubscribe = onAuthStateChanged(auth, user => {
-          if (user) { unsubscribe(); resolve(user); }
-        });
-        setTimeout(() => { unsubscribe(); reject(new Error("Firebase authentication session timed out.")); }, 8000);
-      });
-      goHome();
-    }
-  } catch (error) {
-    showMessage(firebaseMessage(error), "error");
-  }
-})();
 
 document.getElementById("showLogin")?.addEventListener("click", () => setMode("login"));
 
