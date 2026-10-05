@@ -8,7 +8,7 @@ IMPORTANT NOTES: Names are based on the supplied ICMAI screenshots and the ICMAI
 LAST UPDATED: 2026-10-04
 */
 
-const ACADEMIC = {
+const ACADEMIC = window.ACADEMIC = {
   foundation: {
     label: "Foundation",
     groups: {
