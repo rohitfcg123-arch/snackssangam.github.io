@@ -133,10 +133,55 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase
       return;
     }
     box.innerHTML=rows.map(x=>'<button class="home-study-subject-option" type="button" data-study-id="'+String(x[0]).replace(/"/g,'&quot;')+'"><span class="home-subject-icon">'+(x[2]==="custom"?"＋":"▶")+'</span><span><strong>'+String(x[1]).replace(/</g,"&lt;")+'</strong><small>'+(x[2]==="custom"?"Custom subject":"CMA syllabus")+'</small></span><b class="subject-play">▶</b></button>').join("");
-    box.querySelectorAll("[data-study-id]").forEach(b=>b.addEventListener("click",function(){
+    box.querySelectorAll("[data-study-id]").forEach(b=>b.addEventListener("click",async function(){
       const id=this.dataset.studyId;
       if(typeof window.__homeStudyStart==="function"){window.__homeStudyStart(id);return;}
-      alert("Study module is still loading. Please tap Start Study again.");
+      /* Fallback: the subject list must remain usable even when js/home.js
+         fails during module initialization. Selecting a subject still starts
+         the Home timer and persists the active session to Firestore. */
+      try{
+        const u=currentUser||auth.currentUser;
+        if(!u){alert("Please login first to start study.");return;}
+        const ref=doc(db,"users",u.uid,"studyDays",new Date().toISOString().slice(0,10));
+        const snap=await getDoc(ref);
+        const d=snap.exists()?snap.data():{};
+        const totals={...(d.totals||{})};
+        const sessions=Array.isArray(d.sessions)?[...d.sessions]:[];
+        const previous=d.active||null;
+        if(previous){
+          const elapsed=Math.max(0,(Date.now()-Number(previous.startedAt||0))/1000);
+          totals[previous.subjectId]=(Number(totals[previous.subjectId])||0)+elapsed;
+          sessions.push({subjectId:previous.subjectId,start:previous.startedAt,end:Date.now(),duration:elapsed});
+        }
+        const startedAt=Date.now();
+        const active={subjectId:id,startedAt};
+        await setDoc(ref,{date:new Date().toISOString().slice(0,10),totals,sessions,active,updatedAt:Date.now()},{merge:true});
+        try{localStorage.setItem("cma_zone_home_active_study_v1",JSON.stringify(active));}catch{}
+        modal()?.classList.add("hidden");
+        const card=document.getElementById("homeActiveStudy");
+        const start=document.getElementById("startStudy");
+        const subject=document.getElementById("activeStudySubject");
+        const timer=document.getElementById("activeStudyTimer");
+        const started=document.getElementById("activeStudyStarted");
+        const today=document.getElementById("activeStudyToday");
+        const subjectName=String(this.querySelector("strong")?.textContent||id);
+        card?.classList.remove("hidden");
+        start?.classList.add("hidden");
+        if(subject) subject.textContent=subjectName;
+        const fmt=s=>[Math.floor(s/3600),Math.floor(s%3600/60),Math.floor(s%60)].map(x=>String(x).padStart(2,"0")).join(":");
+        const tickFallback=()=>{
+          const elapsed=Math.max(0,(Date.now()-startedAt)/1000);
+          if(timer) timer.textContent=fmt(elapsed);
+          if(started) started.textContent="Started "+new Date(startedAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+          if(today) today.textContent="Today • "+fmt(Object.values(totals).reduce((a,v)=>a+Number(v||0),0)+elapsed)+" total";
+        };
+        tickFallback();
+        if(window.__fallbackStudyTimer) clearInterval(window.__fallbackStudyTimer);
+        window.__fallbackStudyTimer=setInterval(tickFallback,1000);
+      }catch(e){
+        console.error("Fallback Start Study failed:",e);
+        alert("Unable to start study timer. Please check your connection and try again.");
+      }
     }));
   }
   async function sync(){
