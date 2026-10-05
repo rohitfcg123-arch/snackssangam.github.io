@@ -75,4 +75,82 @@ import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/f
 function renderSavedSetup(){const s=JSON.parse(localStorage.getItem("cma_zone_home_v1")||"{}"),map={foundation:"Foundation",g1:"Group 1",g2:"Group 2",g3:"Group 3",g4:"Group 4",both:"Both Groups"};const c=document.getElementById("homeCourseText"),a=document.getElementById("homeAttemptText"),cd=document.getElementById("homeExamCountdown"),dt=document.getElementById("homeExamDate");if(!c)return;c.textContent=s.level&&ACADEMIC[s.level]?(ACADEMIC[s.level].label||"Course")+" • "+(map[s.group]||"Group not selected"):"Course not saved";a.textContent=s.attemptName||"Select exam attempt";if(s.attemptDate){const target=new Date(s.attemptDate+"T00:00:00").getTime(),diff=Math.max(0,target-Date.now()),days=Math.floor(diff/86400000),hours=Math.floor(diff%86400000/3600000),mins=Math.floor(diff%3600000/60000),secs=Math.floor(diff%60000/1000);cd.textContent=days+"d "+hours+"h "+mins+"m "+secs+"s";dt.textContent="Exam starts: "+new Date(s.attemptDate+"T00:00:00").toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"})}else{cd.textContent="—";dt.textContent="Open Course to set your exam."}}
 onAuthStateChanged(auth,user=>{const login=document.getElementById("loginButton"),logout=document.getElementById("headerLogout"),card=document.getElementById("greetingCard"),title=document.getElementById("greetingTitle"),quote=document.getElementById("greetingQuote");if(user){login?.classList.add("hidden");logout?.classList.remove("hidden");card?.classList.remove("hidden");title.textContent="Hi "+((user.displayName||user.email||"Student").split(/\s+/)[0])+" 👋";quote.textContent="Your consistency today builds your confidence tomorrow.";renderSavedSetup();setInterval(renderSavedSetup,1000)}else{login?.classList.remove("hidden");logout?.classList.add("hidden")}});renderSavedSetup();
 </script>
+
+<script type="module">
+/* CMA ZONE — START STUDY HARDENED CONTROLLER
+   Purpose: Keep Start Study subject selection and close action functional even if
+   the main home study module has a transient initialization/Firebase error.
+*/
+import { auth, db } from "./js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+(function(){
+  const modal=()=>document.getElementById("studySubjectModal");
+  const list=()=>document.getElementById("homeStudySubjectList");
+  const localKey="cma_zone_home_v1";
+  let currentUser=null;
+  let subjects=[];
+
+  function localState(){
+    try{return JSON.parse(localStorage.getItem(localKey)||"{}")}catch{return {}}
+  }
+  function builtIn(s){
+    const A=window.ACADEMIC;
+    if(!A || !s.level || !s.group || !A[s.level]) return [];
+    const g=A[s.level].groups||{};
+    if(s.group==="both") return ["g1","g2","g3","g4"].filter(k=>g[k]).flatMap(k=>g[k]);
+    return Array.isArray(g[s.group]) ? g[s.group].slice() : [];
+  }
+  function getCustom(s){
+    try{
+      const uid=currentUser?.uid||"";
+      const a=uid?JSON.parse(localStorage.getItem("cma_zone_custom_subjects_v1:"+uid)||"[]"):[];
+      return Array.isArray(a)?a.filter(x=>Array.isArray(x)&&x.length>=2).map(x=>[String(x[0]),String(x[1]),"custom"]):[];
+    }catch{return []}
+  }
+  function render(){
+    const box=list(); if(!box)return;
+    const s=localState();
+    const rows=[...builtIn(s),...getCustom(s)];
+    subjects=rows;
+    if(!rows.length){
+      box.innerHTML='<div class="empty-state">No subjects found for the saved course/group. Open Course and save your setup again.</div>';
+      return;
+    }
+    box.innerHTML=rows.map(x=>'<button class="home-study-subject-option" type="button" data-study-id="'+String(x[0]).replace(/"/g,'&quot;')+'"><span class="home-subject-icon">'+(x[2]==="custom"?"＋":"▶")+'</span><span><strong>'+String(x[1]).replace(/</g,"&lt;")+'</strong><small>'+(x[2]==="custom"?"Custom subject":"CMA syllabus")+'</small></span><b class="subject-play">▶</b></button>').join("");
+    box.querySelectorAll("[data-study-id]").forEach(b=>b.addEventListener("click",function(){
+      const id=this.dataset.studyId;
+      if(typeof window.__homeStudyStart==="function"){window.__homeStudyStart(id);return;}
+      alert("Study module is still loading. Please tap Start Study again.");
+    }));
+  }
+  async function sync(){
+    let s=localState();
+    if(currentUser){
+      try{
+        const snap=await getDoc(doc(db,"users",currentUser.uid,"studyDays","config"));
+        if(snap.exists()){
+          const d=snap.data()||{};
+          s={...s,level:d.courseLevel||s.level||"",group:d.group||s.group||"",elective:d.elective??s.elective??"",attemptName:d.attemptName||s.attemptName||"",attemptDate:d.attemptDate||s.attemptDate||""};
+          localStorage.setItem(localKey,JSON.stringify(s));
+          if(Array.isArray(d.customSubjects)) localStorage.setItem("cma_zone_custom_subjects_v1:"+currentUser.uid,JSON.stringify(d.customSubjects));
+        }
+      }catch(e){console.warn("Start Study course sync fallback:",e)}
+    }
+    render();
+  }
+  function open(){const m=modal();if(!m)return;m.classList.remove("hidden");sync();}
+  function close(){modal()?.classList.add("hidden");}
+  window.__startStudyOpen=open;
+  window.__startStudyClose=close;
+  window.__startStudyRender=render;
+  document.addEventListener("DOMContentLoaded",()=>{
+    document.getElementById("startStudy")?.addEventListener("click",open,true);
+    document.getElementById("closeStudySubject")?.addEventListener("click",close,true);
+    modal()?.addEventListener("click",e=>{if(e.target===modal())close()});
+  });
+  onAuthStateChanged(auth,u=>{currentUser=u;if(u)sync();});
+})();
+</script>
 </body></html>
