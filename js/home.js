@@ -331,6 +331,7 @@ async function openChooser(){
   renderHomeChoices();
 }
 function closeChooser(){$("studySubjectModal")?.classList.add("hidden")}
+window.__homeStudyStart=homeStart;
 async function homeStart(id){
   homeStudyUser=homeStudyUser||auth.currentUser;
   if(!homeStudyUser)return;if(homeStudyState.active){const a=homeStudyState.active,d=homeElapsed();homeStudyState.totals[a.subjectId]=(homeStudyState.totals[a.subjectId]||0)+d;homeStudyState.sessions.push({subjectId:a.subjectId,start:a.startedAt,end:Date.now(),duration:d})}homeStudyState.active={subjectId:id,startedAt:Date.now()};await homeSave();closeChooser();renderHomeActive()}
