@@ -83,7 +83,7 @@ onAuthStateChanged(auth,user=>{const login=document.getElementById("loginButton"
 */
 import { auth, db } from "./js/firebase.js";
 import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 
 (function(){
   const modal=()=>document.getElementById("studySubjectModal");
@@ -204,6 +204,60 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase
   window.__startStudyOpen=open;
   window.__startStudyClose=close;
   window.__startStudyRender=render;
+  /* CAPTURE-LEVEL START STUDY HANDLER
+     Runs before listeners installed by js/home.js, so a failed home module
+     cannot block subject selection with the old loading alert. */
+  async function captureStart(e){
+    const btn=e.target?.closest?.("[data-study-id]");
+    if(!btn || !list()?.contains(btn)) return;
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    const id=btn.dataset.studyId;
+    const u=currentUser||auth.currentUser;
+    if(!u){alert("Please login first to start study.");return;}
+    try{
+      const day=new Date().toISOString().slice(0,10);
+      const ref=doc(db,"users",u.uid,"studyDays",day);
+      const snap=await getDoc(ref);
+      const d=snap.exists()?snap.data():{};
+      const totals={...(d.totals||{})};
+      const sessions=Array.isArray(d.sessions)?[...d.sessions]:[];
+      if(d.active){
+        const elapsed=Math.max(0,(Date.now()-Number(d.active.startedAt||0))/1000);
+        totals[d.active.subjectId]=(Number(totals[d.active.subjectId])||0)+elapsed;
+        sessions.push({subjectId:d.active.subjectId,start:d.active.startedAt,end:Date.now(),duration:elapsed});
+      }
+      const active={subjectId:id,startedAt:Date.now()};
+      await setDoc(ref,{date:day,totals,sessions,active,updatedAt:Date.now()},{merge:true});
+      modal()?.classList.add("hidden");
+      const card=document.getElementById("homeActiveStudy");
+      const start=document.getElementById("startStudy");
+      const subject=document.getElementById("activeStudySubject");
+      const timer=document.getElementById("activeStudyTimer");
+      const started=document.getElementById("activeStudyStarted");
+      const today=document.getElementById("activeStudyToday");
+      const name=btn.querySelector("strong")?.textContent||id;
+      card?.classList.remove("hidden");
+      start?.classList.add("hidden");
+      if(subject) subject.textContent=name;
+      const fmt=s=>[Math.floor(s/3600),Math.floor(s%3600/60),Math.floor(s%60)].map(x=>String(x).padStart(2,"0")).join(":");
+      const startedAt=active.startedAt;
+      const tickTimer=()=>{
+        const elapsed=Math.max(0,(Date.now()-startedAt)/1000);
+        if(timer) timer.textContent=fmt(elapsed);
+        if(started) started.textContent="Started "+new Date(startedAt).toLocaleTimeString("en-IN",{hour:"2-digit",minute:"2-digit"});
+        if(today) today.textContent="Today • "+fmt(Object.values(totals).reduce((a,v)=>a+Number(v||0),0)+elapsed)+" total";
+      };
+      tickTimer();
+      if(window.__captureStudyTimer) clearInterval(window.__captureStudyTimer);
+      window.__captureStudyTimer=setInterval(tickTimer,1000);
+    }catch(err){
+      console.error("CAPTURE START STUDY FAILED",err);
+      alert("Unable to start study timer. Please check your connection and try again.");
+    }
+  }
+  document.addEventListener("click",captureStart,true);
+
   document.addEventListener("DOMContentLoaded",()=>{
     document.getElementById("startStudy")?.addEventListener("click",open,true);
     document.getElementById("closeStudySubject")?.addEventListener("click",close,true);
