@@ -170,7 +170,14 @@ async function loadCloudState(user) {
     if(d.revisionDate) state.revisionDate=d.revisionDate;
     localStorage.setItem(STORE,JSON.stringify(state));
     localStorage.setItem(COUNTDOWN_STORE,JSON.stringify({attemptName:state.attemptName||"",attemptDate:state.attemptDate||"",revisionName:state.revisionName||"",revisionDate:state.revisionDate||""}));
-  } catch(e){ console.error("Cloud setup load failed:",e); cloudReady = false; return false; }
+  } catch(e){
+    console.error("Cloud setup load failed:",e);
+    // Fall back to the last locally saved course so Start Study still works
+    // when Firestore is temporarily unavailable or rules reject a read.
+    try{ state = JSON.parse(localStorage.getItem(STORE) || "{}"); }catch{ state = {}; }
+    cloudReady = false;
+    return false;
+  }
 }
 function save() {
   if (!cloudReady || !auth.currentUser || cloudUserId !== auth.currentUser.uid) {
@@ -316,7 +323,7 @@ const homeToday=()=>{const d=new Date();return d.getFullYear()+"-"+String(d.getM
 const homeStudyRef=()=>homeStudyUser?doc(db,"users",homeStudyUser.uid,"studyDays",homeToday()):null;
 const homeConfigRef=()=>homeStudyUser?doc(db,"users",homeStudyUser.uid,"studyDays",STUDY_CONFIG_DOC):null;
 const homeCacheKey=()=>homeStudyUser?"cma_zone_custom_subjects_v1:"+homeStudyUser.uid:"";
-function homeBuiltInSubjects(){if(!state.level||!state.group||!ACADEMIC[state.level])return[];const g=ACADEMIC[state.level].groups;if(state.group==="both")return["g1","g2","g3","g4"].filter(k=>g[k]).flatMap(k=>g[k]);const a=g[state.group]||[];if(state.level==="final"&&state.group==="g4"&&state.elective){const e=g.electives?.find(x=>x[0]===state.elective);return e?[...a,e]:a}return a}
+function homeBuiltInSubjects(){const academic=window.ACADEMIC;if(!state.level||!state.group||!academic||!academic[state.level])return[];const g=academic[state.level].groups;if(state.group==="both")return["g1","g2","g3","g4"].filter(k=>g[k]).flatMap(k=>g[k]);const a=g[state.group]||[];if(state.level==="final"&&state.group==="g4"&&state.elective){const e=g.electives?.find(x=>x[0]===state.elective);return e?[...a,e]:a}return a}
 const homeSubjects=()=>[...homeBuiltInSubjects(),...homeCustomSubjects],homeSubjectName=id=>homeSubjects().find(x=>x[0]===id)?.[1]||id;
 const homeElapsed=()=>homeStudyState.active?Math.max(0,(Date.now()-Number(homeStudyState.active.startedAt||0))/1000):0;
 const homeFormat=sec=>{sec=Math.max(0,Math.floor(sec));return[Math.floor(sec/3600),Math.floor(sec%3600/60),sec%60].map(x=>String(x).padStart(2,"0")).join(":")};
