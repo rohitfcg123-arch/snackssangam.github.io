@@ -19,7 +19,7 @@
 <section class="quick-actions"><a class="quick-action quick-blue" href="pages/statistics.html"><span>▥</span><div><strong>Statistics</strong><small>View progress & reports</small></div><b>›</b></a><a class="quick-action quick-purple" href="pages/study.html"><span>▤</span><div><strong>Subjects</strong><small>Manage subjects & topics</small></div><b>›</b></a><button class="quick-action quick-orange" type="button" id="quickRevision"><span>⟳</span><div><strong>Revision</strong><small>Track revision</small></div><b>›</b></button><button class="quick-action quick-green" type="button" id="quickDaily"><span>▣</span><div><strong>Daily Plan</strong><small>Today's targets</small></div><b>›</b></button></section>
 <section class="panel"><div class="panel-heading"><div><p class="eyebrow">REVISION</p><h2>My revision countdown</h2></div><button class="text-button" id="editRevision" type="button">Add / Edit</button></div><div id="revisionEmpty" class="empty-state">Set a separate countdown for any revision target.</div><div id="revisionView" class="hidden"><div class="revision-name" id="revisionName"></div><div class="revision-countdown" id="revisionCountdown">—</div><div class="countdown-label" id="revisionDateLabel"></div></div><div class="countdown-edit hidden" id="revisionEditor"><label>Revision target<input id="revisionNameInput" placeholder="e.g. SFM Revision 1"></label><label>Revision date<input id="revisionDate" type="date"></label><button class="primary-button" id="saveRevision" type="button">Save Revision</button></div></section>
 </main><div class="study-subject-modal hidden" id="studySubjectModal" role="dialog" aria-modal="true" aria-labelledby="studySubjectTitle"><div class="study-subject-sheet"><div class="study-sheet-head"><div><p class="eyebrow">START STUDY</p><h2 id="studySubjectTitle">Choose subject to start</h2></div><button id="closeStudySubject" type="button" aria-label="Close">×</button></div><div id="homeStudySubjectList" class="home-study-subject-list"></div></div></div>
-<script src="js/academic.js?v=20261004f"></script>
+<script src="js/academic.js?v=20261005g3fix1"></script>
 <script>
 /* START STUDY SAFETY FALLBACK
    Keeps the subject chooser clickable even if a later module has a runtime/network error.
@@ -44,7 +44,7 @@
 <script>
 document.addEventListener("DOMContentLoaded",function(){const b=document.getElementById("menuToggle"),m=document.getElementById("sideMenu"),o=document.getElementById("menuOverlay"),x=document.getElementById("menuClose");function open(){m?.classList.add("open");o?.classList.remove("hidden");m?.setAttribute("aria-hidden","false");document.body.classList.add("menu-open")}function close(){m?.classList.remove("open");o?.classList.add("hidden");m?.setAttribute("aria-hidden","true");document.body.classList.remove("menu-open")}b?.addEventListener("click",open);x?.addEventListener("click",close);o?.addEventListener("click",close)});
 </script>
-<script type="module" src="js/home.js?v=20261005firebasefirst1"></script>
+<script type="module" src="js/home.js?v=20261005g3fix1"></script>
 <script type="module">
 import { auth } from "./js/firebase.js";
 import { signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -96,8 +96,22 @@ import { doc, getDoc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase
     try{return JSON.parse(localStorage.getItem(localKey)||"{}")}catch{return {}}
   }
   function builtIn(s){
-    const A=window.ACADEMIC;
-    if(!A || !s.level || !s.group || !A[s.level]) return [];
+    const A=window.ACADEMIC || {
+      final:{groups:{
+        g3:[
+          ["Paper 13","Corporate and Economic Laws (CEL)"],
+          ["Paper 14","Strategic Financial Management (SFM)"],
+          ["Paper 15","Direct Tax Laws and International Taxation (DIT)"],
+          ["Paper 16","Strategic Cost Management (SCM)"]
+        ],
+        g4:[
+          ["Paper 17","Cost and Management Audit (CMAD)"],
+          ["Paper 18","Corporate Financial Reporting (CFR)"],
+          ["Paper 19","Indirect Tax Laws and Practice (ITLP)"]
+        ]
+      }}
+    };
+    if(!s.level || !s.group || !A[s.level]) return [];
     const g=A[s.level].groups||{};
     if(s.group==="both") return ["g1","g2","g3","g4"].filter(k=>g[k]).flatMap(k=>g[k]);
     return Array.isArray(g[s.group]) ? g[s.group].slice() : [];
